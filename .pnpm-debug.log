@@ -1,0 +1,23 @@
+{
+  "0 debug pnpm:scope": {
+    "selected": 1
+  },
+  "1 info pnpm": {
+    "err": {
+      "name": "Error",
+      "message": "not found: README.md",
+      "code": "ENOENT",
+      "stack": "Error: not found: README.md\n    at getNotFoundError (/usr/local/Cellar/pnpm/6.32.1/libexec/lib/node_modules/pnpm/dist/pnpm.cjs:41575:51)\n    at Function.whichSync [as sync] (/usr/local/Cellar/pnpm/6.32.1/libexec/lib/node_modules/pnpm/dist/pnpm.cjs:41652:13)\n    at getCommandAbsolutePathSync (/usr/local/Cellar/pnpm/6.32.1/libexec/lib/node_modules/pnpm/dist/pnpm.cjs:43217:44)\n    at default_1 (/usr/local/Cellar/pnpm/6.32.1/libexec/lib/node_modules/pnpm/dist/pnpm.cjs:43226:32)\n    at /usr/local/Cellar/pnpm/6.32.1/libexec/lib/node_modules/pnpm/dist/pnpm.cjs:178151:39"
+    }
+  },
+  "2 error pnpm": {
+    "code": "ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL",
+    "prefix": "/Users/aaron/Documents/code/tiny-vue",
+    "err": {
+      "name": "pnpm",
+      "message": "not found: README.md",
+      "code": "ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL",
+      "stack": "Error: not found: README.md\n    at getNotFoundError (/usr/local/Cellar/pnpm/6.32.1/libexec/lib/node_modules/pnpm/dist/pnpm.cjs:41575:51)\n    at Function.whichSync [as sync] (/usr/local/Cellar/pnpm/6.32.1/libexec/lib/node_modules/pnpm/dist/pnpm.cjs:41652:13)\n    at getCommandAbsolutePathSync (/usr/local/Cellar/pnpm/6.32.1/libexec/lib/node_modules/pnpm/dist/pnpm.cjs:43217:44)\n    at default_1 (/usr/local/Cellar/pnpm/6.32.1/libexec/lib/node_modules/pnpm/dist/pnpm.cjs:43226:32)\n    at /usr/local/Cellar/pnpm/6.32.1/libexec/lib/node_modules/pnpm/dist/pnpm.cjs:178151:39"
+    }
+  }
+}

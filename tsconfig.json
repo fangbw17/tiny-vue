@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    // "baseUrl": "",
+    "strict": true, /* 严格模式检查 */
+    // "rootDir": "", /* 指定根目录 */
+    "moduleResolution": "node", /* 指定模块解析模式 node: commonjs的方式；(node16 or nodeeext): esm;*/
+    "esModuleInterop": true, /* commonjs/amd/umd/es6语法兼容*/
+    "target": "ES5", /* 设置 JS 语言版本*/
+    "module": "ESNext",
+    "noImplicitAny": false, /* 强制类型检查 */
+    "removeComments": true, /* 转换成js时，移除注释 */
+    "preserveConstEnums": false, /* 生成的代码中保留 const enum */
+    "sourceMap": true, /* 创建对应的 source-map 文件 */
+    "downlevelIteration": true,
+    "lib": ["ES6", "DOM"],
+    // "types": ["vitest/globals"],
+    // "paths": {
+      // "@tiny-vue/*": ["packages/*/src"]
+    // },
+  },
+  // "include": ["packages/*/src", "packages/*/__tests__"]
+  "include": ["src/index.ts"]
+}
