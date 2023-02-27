@@ -1,4 +1,2 @@
+export * from '@vue/reactivity'
 export * from './runtime-core'
-// export const printMessage = function(msg) {
-    // console.log(msg);
-// }

@@ -10,10 +10,18 @@ export function hostSetElementText(el: HTMLElement, text) {
 }
 
 export function hostPatchProp(el, key, preValue, nextValue) {
-    console.log(`hostPatchProp 设置属性:${key} 的值:${nextValue}`);
+    console.log(`属性key: ${key} 的旧值是${preValue}，新值是:${nextValue}`);
     switch(key) {
         case "tId":
-            el.setAttribute(key, nextValue)
+            // 当新值设置为 null 或者 undefined时，说明要移除该属性
+            if (nextValue === null || nextValue === undefined) {
+                el.removeattribute(key)
+            } else {
+                el.setAttribute(key, nextValue)
+            }
+            break;
+        case "onclick":
+            el.addEventListener("click", nextValue)
             break;
     }
 }

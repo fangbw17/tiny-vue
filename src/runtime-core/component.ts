@@ -9,6 +9,7 @@ export const createComponentInstance = function (vnode: any) {
         vnode,
         props: {},
         proxy: null,
+        isMounted: false,
     };
     return instance;
 };

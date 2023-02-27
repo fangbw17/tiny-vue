@@ -1,5 +1,10 @@
+
 import commonjs from 'rollup-plugin-commonjs'
 import typescript from "rollup-plugin-typescript2"
+import resolve from '@rollup/plugin-node-resolve'
+import replace from '@rollup/plugin-replace'
+import sourceMaps from 'rollup-plugin-sourcemaps'
+
 export default {
     input: 'src/index.ts',
     output: [
@@ -21,6 +26,12 @@ export default {
             declaration: true,
             declarationDir: 'lib'
         }),
-        commonjs()
+        replace({
+            'process.env.NODE_ENV': JSON.stringify('development'),
+            'process.env.VUE_ENV': JSON.stringify('browser')
+        }),
+        resolve(),
+        commonjs(),
+        sourceMaps()
     ]
 }
