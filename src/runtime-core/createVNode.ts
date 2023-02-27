@@ -9,13 +9,14 @@ import { ShapeFlags } from '../shared'
  */
 export const createVNode = function (
     type: any,
-    props: any,
+    props: any = {},
     children: string | Array<any>
 ): any {
 
     const vnode = {
         el: null,
         component: null,
+        key: props.key || null,
         type,
         props,
         children,

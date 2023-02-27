@@ -5,6 +5,7 @@ import {
     hostSetElementText,
     hostPatchProp,
     hostInsert,
+    hostRemove,
 } from "./render-api";
 import { effect } from "@vue/reactivity";
 import { h } from "./h";
@@ -109,7 +110,7 @@ function updateElement(n1, n2, container) {
 
     const el = (n2.el = n1.el);
     // 对比 props
-    patchProps(el, n1.props, n2.props)
+    patchProps(el, n1.props, n2.props);
     // 对比 children
     patchChildren(n1, n2, el);
 }
@@ -117,21 +118,21 @@ function updateElement(n1, n2, container) {
 function patchProps(el, oldProps = {}, newProps = {}) {
     // 新旧有值，更新值
     for (const key in newProps) {
-        const oldValue = oldProps[key]
-        const newValue = newProps[key]
+        const oldValue = oldProps[key];
+        const newValue = newProps[key];
         if (oldValue !== newValue) {
             // 更新
-            hostPatchProp(el, key, oldValue, newValue)
+            hostPatchProp(el, key, oldValue, newValue);
         }
     }
 
     // 旧有，新无
     for (const key in oldProps) {
-        const oldValue = oldProps[key]
+        const oldValue = oldProps[key];
         // 新的节点 props 中没有该属性
         if (!(key in newProps)) {
             // 更新
-            hostPatchProp(el, key, oldValue, null)
+            hostPatchProp(el, key, oldValue, null);
         }
     }
 }
@@ -143,6 +144,141 @@ function patchChildren(n1, n2, container) {
         if (n1.children !== n2.children) {
             console.log("类型为 text_children, 当前需要更新");
             hostSetElementText(container, n2.children as string);
+        }
+    } else {
+        // 旧节点的子节点是 Array
+        if (n1.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+            // 新节点的子节点是 Array
+            if (n2.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+                patchKeyedChildren(n1.children, n2.children, container);
+            }
+        }
+    }
+}
+
+function patchKeyedChildren(c1: any[], c2: any[], container) {
+    // 粗暴更新 直接移除旧节点的 DOM，再更新新节点的 DOM
+    // c1.forEach(c => hostRemove(c.el))
+    // c2.forEach(c => patch(null, c, container))
+
+    // 快速算法
+    var j = 0;
+    var oldEnd = c1.length - 1,
+        newEnd = c2.length - 1;
+    // 检查新旧节点的 type 和 key 是否相同
+    var isSameVNodeType = function (n1, n2) {
+        // if (n1 === undefined || n2 === undefined) return false
+        return n1.type === n2.type && n1.key === n2.key;
+    };
+    // 新旧节点从头开始遍历
+    while (j <= oldEnd && j <= newEnd) {
+        const prevChild = c1[j];
+        const nextChild = c2[j];
+        if (!isSameVNodeType(prevChild, nextChild)) {
+            // 不同跳出 while 循环
+            console.log("头部遍历 - 新旧节点不同");
+            break;
+        }
+        // 节点一样，则更新数据
+        patch(prevChild, nextChild, container);
+        j++;
+    }
+    // 新旧节点从尾部开始遍历
+    while (j <= oldEnd && j <= newEnd) {
+        const prevChild = c1[oldEnd];
+        const nextChild = c2[newEnd];
+        if (!isSameVNodeType(prevChild, nextChild)) {
+            // 不同跳出 while 循环
+            console.log("尾部遍历 - 新旧节点不同");
+            break;
+        }
+        // 节点一样，则更新数据
+        patch(prevChild, nextChild, container);
+        oldEnd--;
+        newEnd--;
+    }
+
+    // 从头与从尾部遍历结束
+    // 条件成立则说明新数据中有新增节点
+    //               新      旧
+    //               p-1     p-1  <- oldEnd = 0
+    //      j = 1 -> p-4     p-2  <- j = 1
+    // newEnd = 2 -> p-5     p-3
+    //               p-2
+    //               p-3
+    //
+    if (j > oldEnd && newEnd >= j) {
+        while (newEnd >= j) {
+            console.log("新增一个节点：", c2[j].key);
+            patch(null, c2[j++], container);
+        }
+    } else if (j > newEnd && j <= oldEnd) {
+        //               新      旧
+        // newEnd = 0 -> p-1     p-1
+        //      j = 1 -> p-2     p-4 <- j = 1
+        //               p-3     p-5 <- oldEnd = 2
+        //                       p-2
+        //                       p-3
+        //
+        while (oldEnd >= j) {
+            console.log("移除一个节点: ", c1[j].key);
+            hostRemove(c1[j++].el);
+        }
+    } else {
+        // 前后都对比完了、中间节点是乱序的对比情况
+        // 新 p1 p3 p2 p4 p6 p7
+        // 旧 p1 p2 p3 p4 p5 p7
+        let oldIndex = j,
+            newIndex = j;
+        // 节点 map : {VNode1.key: 1, VNode2.key: 2}
+        const keyMap = new Map();
+        // 遍历新节点
+        for (let i = newIndex; i <= newEnd; i++) {
+            const nextChild = c2[i];
+            keyMap.set(nextChild.key, i);
+        }
+        // 需要处理新节点的数量
+        const toBePatched = newEnd - newIndex + 1;
+        // 用来记录新节点对应旧节点的下标值
+        const newIndexArray = new Array(toBePatched);
+        for (let index = 0; index < newIndexArray.length; index++) {
+            // 每个新节点初始 -1
+            newIndexArray[index] = -1;
+        }
+
+        // 遍历老节点
+        // 1. 老节点有，新节点没有则删除
+        // 2. 新节点有，老节点没有则新增
+        for (let k = oldIndex; k <= oldEnd; k++) {
+            const prevChild = c1[k];
+            const newIndex = keyMap.get(prevChild.key);
+            newIndexArray[newIndex] = k;
+
+            // 因为有可能 newIndex 的值为0 （0也是正常值）
+            // 所以需要用 undefined 判断
+            if (newIndex === undefined) {
+                // 旧数据中的当前节点的 key，未在新数据中找到，则移除当前旧节点
+                hostRemove(prevChild.el);
+            } else {
+                // 新老节点都有
+                patch(prevChild, c2[newIndex], container);
+            }
+        }
+
+        // 遍历新节点
+        // 老节点没有，新节点有则创建
+        for (let n = newEnd; n >= newIndex; n--) {
+            const nextChild = c2[n];
+            if (newIndexArray[n] === -1) {
+                // 初始为 -1，未在老节点中查找到
+                patch(null, nextChild, container);
+            } else {
+                // n: 当前元素
+                // n + 1: 下一个元素 （锚点元素）
+                // 当 n 为新数据中最后一个节点时， n + 1 可能没有元素，没有则设置为 null
+                const anchor = n + 1 >= newEnd + 1 ? null : c2[n + 1];
+                hostInsert(nextChild.el, container, anchor && anchor.el);
+            }
         }
     }
 }
@@ -249,7 +385,7 @@ function setupRenderEffect(instance, container) {
             console.log(`${instance.type.name}:触发 mounted hook`);
             instance.isMounted = true;
         } else {
-            console.log("更新逻辑");
+            console.log("更新逻辑: ", Date.now());
             // 获取新的 subTree
             const nextTree = instance.render(instance.proxy);
             // 替换之前的 subTree
@@ -266,6 +402,7 @@ function setupRenderEffect(instance, container) {
             // 触发 updated hook
             console.log("updated hook");
             console.log("onVnodeUpdated hook");
+            console.log(Date.now());
         }
     });
 }
