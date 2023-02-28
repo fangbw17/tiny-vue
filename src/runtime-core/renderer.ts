@@ -9,6 +9,8 @@ import {
 } from "./render-api";
 import { effect } from "@vue/reactivity";
 import { h } from "./h";
+import { setupComponent } from "./component";
+import { queueJob } from "./scheduler";
 
 export const render = function (vnode, container) {
     console.log("调用 patch");
@@ -289,6 +291,8 @@ function processComponent(n1, n2, container) {
         // 挂载组件
         mountComponent(n2, container);
     } else {
+        // 更新组件
+        updateComponent(n1, n2, container)
     }
 }
 
@@ -303,54 +307,9 @@ function mountComponent(vnode, container) {
     setupRenderEffect(instance, container);
 }
 
-// 加工组件实例
-function setupComponent(instance) {
-    // 处理 props
-    initProps();
-    // 处理 slots
-    initSlots();
+// 更新组件
+function updateComponent(n1, n2, container) {
 
-    setupStatefulComponent(instance);
-}
-
-function initProps() {}
-function initSlots() {}
-
-function setupStatefulComponent(instance) {
-    // 1. 创建代理 proxy
-    console.log(`创建 proxy`);
-    // 2. 调用setup
-    const setupResult = instance.setup && instance.setup(instance.props);
-    // 3. 处理 setupResult
-    handleSetupResult(instance, setupResult);
-}
-
-function handleSetupResult(instance, setupResult) {
-    if (typeof setupResult === "function") {
-        // 返回的渲染函数
-        // setup() {return () => h1('div')}
-        instance.render = setupResult;
-    } else if (typeof setupResult === "object") {
-        // 对象则先存到 setupState 上
-        instance.setupState = setupResult;
-    }
-
-    finishComponentSetup(instance);
-}
-
-function finishComponentSetup(instance) {
-    // 给 instance 设置 render
-    // 获取用户设置的 component options
-    const component = instance.type;
-    if (!instance.render) {
-    }
-    instance.render = component.render;
-
-    // applyOptions()
-}
-
-function applyOptions() {
-    // 兼容 vue2.x
 }
 
 function setupRenderEffect(instance, container) {
@@ -359,50 +318,59 @@ function setupRenderEffect(instance, container) {
     // ctx 可以选择暴露给用户的 api
     // 源代码里面是调用的 renderComponentRoot 函数
     // 这里为了简化直接调用 render
-    instance.update = effect(function componentEffect() {
-        if (!instance.isMounted) {
-            console.log("调用 render,获取 subTree");
-            const subTree = (instance.subTree = instance.render(
-                instance.proxy
-            ));
-            console.log("subTree", subTree);
+    instance.update = effect(
+        function componentEffect() {
+            if (!instance.isMounted) {
+                console.log("调用 render,获取 subTree");
+                const subTree = (instance.subTree = instance.render(
+                    instance.proxy
+                ));
+                console.log("subTree", subTree);
 
-            console.log(`${instance.type.name}:触发 beforeMount hook`);
-            console.log(`${instance.type.name}:触发 onVnodeBeforeMount hook`);
+                console.log(`${instance.type.name}:触发 beforeMount hook`);
+                console.log(
+                    `${instance.type.name}:触发 onVnodeBeforeMount hook`
+                );
 
-            // 这里基于 subTree 再次调用 patch
-            // 基于 render 返回的 vnode ，再次进行渲染
-            // 这里我把这个行为隐喻成开箱
-            // 一个组件就是一个箱子
-            // 里面有可能是 element （也就是可以直接渲染的）
-            // 也有可能还是 component
-            // 这里就是递归的开箱
-            // 而 subTree 就是当前的这个箱子（组件）装的东西
-            // 箱子（组件）只是个概念，它实际是不需要渲染的
-            // 要渲染的是箱子里面的 subTree
-            patch(null, subTree, container);
+                // 这里基于 subTree 再次调用 patch
+                // 基于 render 返回的 vnode ，再次进行渲染
+                // 这里我把这个行为隐喻成开箱
+                // 一个组件就是一个箱子
+                // 里面有可能是 element （也就是可以直接渲染的）
+                // 也有可能还是 component
+                // 这里就是递归的开箱
+                // 而 subTree 就是当前的这个箱子（组件）装的东西
+                // 箱子（组件）只是个概念，它实际是不需要渲染的
+                // 要渲染的是箱子里面的 subTree
+                patch(null, subTree, container);
 
-            console.log(`${instance.type.name}:触发 mounted hook`);
-            instance.isMounted = true;
-        } else {
-            console.log("更新逻辑: ", Date.now());
-            // 获取新的 subTree
-            const nextTree = instance.render(instance.proxy);
-            // 替换之前的 subTree
-            const prevTree = instance.subTree;
-            instance.subTree = nextTree;
+                console.log(`${instance.type.name}:触发 mounted hook`);
+                instance.isMounted = true;
+            } else {
+                console.log("更新逻辑: ", Date.now());
+                // 获取新的 subTree
+                const nextTree = instance.render(instance.proxy);
+                // 替换之前的 subTree
+                const prevTree = instance.subTree;
+                instance.subTree = nextTree;
 
-            // 触发 beforeUpdated hook
-            console.log("beforeUpdated hook");
-            console.log("onVnodeBeforeUpdate hook");
+                // 触发 beforeUpdated hook
+                console.log("beforeUpdated hook");
+                console.log("onVnodeBeforeUpdate hook");
 
-            // 用旧的 vnode 和新的 vnode 交给 patch 来处理
-            patch(prevTree, nextTree, prevTree.el);
+                // 用旧的 vnode 和新的 vnode 交给 patch 来处理
+                patch(prevTree, nextTree, prevTree.el);
 
-            // 触发 updated hook
-            console.log("updated hook");
-            console.log("onVnodeUpdated hook");
-            console.log(Date.now());
+                // 触发 updated hook
+                console.log("updated hook");
+                console.log("onVnodeUpdated hook");
+                console.log(Date.now());
+            }
+        },
+        {
+            scheduler: (effect) => {
+                queueJob(effect)
+            }
         }
-    });
+    );
 }

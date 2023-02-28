@@ -3,7 +3,7 @@ import { createVNode } from "./createVNode";
 export const createApp = function (rootComponent: any, rootProps: object) {
     const app = {
         _component: rootComponent,
-        _container: null,
+        // _container: null,
         mount,
     };
 
@@ -11,7 +11,7 @@ export const createApp = function (rootComponent: any, rootProps: object) {
     function mount(rootContainer: any) {
         console.log("基于根组件创建 vnode");
         const vnode = createVNode(rootComponent, rootProps, '');
-        app._container = rootContainer;
+        // app._container = rootContainer;
         console.log("调用 render，基于 vnode 进行开箱");
         render(vnode, rootContainer);
     }
