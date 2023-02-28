@@ -13,7 +13,7 @@ export const queueJob = function (effect) {
     console.log(`what's the effect: ${effect}`);
 };
 
-export const nextTick(fn) {
+export const nextTick = function(fn) {
     return fn ? p.then(fn).finally(() => {
             // 执行结束
         isFlushPending = false
