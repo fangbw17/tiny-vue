@@ -1,4 +1,5 @@
 import { initProps } from "./componentProps";
+import {emit} from './componentEmits'
 /**
  * @description: 创建组件实例
  * @param {any} vnode
@@ -15,6 +16,7 @@ export const createComponentInstance = function (vnode: any) {
         slots: {},
         emit: () => {},
     };
+    instance.emit = emit.bind(null, instance) as any
     return instance;
 };
 
