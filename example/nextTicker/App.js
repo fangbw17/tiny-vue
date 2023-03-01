@@ -1,6 +1,6 @@
-import { h, ref } from "../lib/tiny-vue.esm.js";
-import PatchChildren from "./components/PatchChildren.js";
-import NextTicker from './components/NextTicker.js'
+import { h, ref } from "../../lib/tiny-vue.esm.js";
+import PatchChildren from "./PatchChildren.js";
+import NextTicker from './NextTicker.js'
 
 export default {
     name: "App",

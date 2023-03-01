@@ -1,5 +1,6 @@
 import { initProps } from "./componentProps";
-import {emit} from './componentEmits'
+import { emit } from "./componentEmits";
+import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
 /**
  * @description: 创建组件实例
  * @param {any} vnode
@@ -14,9 +15,18 @@ export const createComponentInstance = function (vnode: any) {
         isMounted: false,
         attrs: {},
         slots: {},
+        ctx: {},
         emit: () => {},
     };
-    instance.emit = emit.bind(null, instance) as any
+
+    // 在 prod 环境下的 ctx 只是下面简单的结构
+    // 在 dev 中更复杂
+    instance.ctx = {
+        _: instance
+    }
+
+    // emit 的实现绑定
+    instance.emit = emit.bind(null, instance) as any;
     return instance;
 };
 
@@ -35,9 +45,13 @@ function initSlots() {}
 function setupStatefulComponent(instance) {
     // 1. 创建 proxy
     console.log("创建 proxy");
+    // proxy 对象代理了 instance.ctx 对象
+    // 在使用的时候需要使用 instance.proxy 对象
+    // 因为在 prod 和 dev 下 instance.ctx 是不同的
+    instance.proxy = new Proxy(instance.ctx, PublicInstanceProxyHandlers)
     const { setup } = instance.type;
     // 2. 调用 setup() 参数: props、context
-    const context = createSetupContext(instance)
+    const context = createSetupContext(instance);
     const setupResult = setup && setup(instance.props, context);
     // 3. 处理 setupResult
     handleSetupResult(instance, setupResult);
@@ -49,8 +63,8 @@ function createSetupContext(instance) {
         attrs: instance.attrs,
         slots: instance.slots,
         emit: instance.emit,
-        expose: () => {}
-    }
+        expose: () => {},
+    };
 }
 
 function handleSetupResult(instance, setupResult) {

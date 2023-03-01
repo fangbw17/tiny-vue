@@ -21,7 +21,7 @@ export function hostPatchProp(el, key, preValue, nextValue) {
                 el.setAttribute(key, nextValue);
             }
             break;
-        case "onclick":
+        case "onClick":
             el.addEventListener("click", nextValue);
             break;
     }
