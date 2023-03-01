@@ -1,6 +1,7 @@
 import { initProps } from "./componentProps";
 import { emit } from "./componentEmits";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
+import { proxyRefs } from "@vue/reactivity";
 /**
  * @description: 创建组件实例
  * @param {any} vnode
@@ -13,9 +14,10 @@ export const createComponentInstance = function (vnode: any) {
         props: {},
         proxy: null,
         isMounted: false,
-        attrs: {},
-        slots: {},
-        ctx: {},
+        attrs: {}, // 属性
+        slots: {}, // 插槽
+        ctx: {}, // 上下文
+        setupState: {}, // setup 的返回值
         emit: () => {},
     };
 
@@ -76,7 +78,7 @@ function handleSetupResult(instance, setupResult) {
         instance.render = setupResult;
     } else if (typeof setupResult === "object") {
         // 对象则先存到 setupState 上
-        instance.setupState = setupResult;
+        instance.setupState = proxyRefs(setupResult);
     }
 
     const component = instance.type;

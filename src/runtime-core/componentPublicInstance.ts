@@ -5,7 +5,15 @@ const publicPropertiesMap = {
 
 export const PublicInstanceProxyHandlers = {
     get({ _: instance }, key) {
-        console.log("触发 proxy 的 hook");
+        const { setupState } = instance;
+        console.log("触发 proxy 的 hook. key: ", key);
+
+        // 不是 $, 检测 是否在setupState 中
+        if (key !== '$') {
+            if (key in setupState) {
+                return setupState[key]
+            }   
+        }
         const publicGetter = publicPropertiesMap[key];
 
         if (publicGetter) {

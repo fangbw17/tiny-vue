@@ -351,7 +351,8 @@ function setupRenderEffect(instance, container) {
             } else {
                 console.log("更新逻辑: ", Date.now());
                 // 获取新的 subTree
-                const nextTree = instance.render(instance.proxy);
+                const proxyToUse = instance.proxy
+                const nextTree = instance.render.call(proxyToUse, proxyToUse);
                 // 替换之前的 subTree
                 const prevTree = instance.subTree;
                 instance.subTree = nextTree;
