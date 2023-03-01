@@ -372,6 +372,7 @@ function setupRenderEffect(instance, container) {
         },
         {
             scheduler: (effect) => {
+                // const that = this.scheduler
                 queueJob(effect)
             }
         }
