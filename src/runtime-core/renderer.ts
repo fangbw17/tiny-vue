@@ -322,8 +322,10 @@ function setupRenderEffect(instance, container) {
         function componentEffect() {
             if (!instance.isMounted) {
                 console.log("调用 render,获取 subTree");
-                const subTree = (instance.subTree = instance.render(
-                    instance.proxy
+                const proxyToUse = instance.proxy
+                const subTree = (instance.subTree = instance.render.call(
+                    proxyToUse,
+                    proxyToUse
                 ));
                 console.log("subTree", subTree);
 
