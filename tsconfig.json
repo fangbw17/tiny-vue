@@ -19,5 +19,5 @@
     // },
   },
   // "include": ["packages/*/src", "packages/*/__tests__"]
-  "include": ["src/index.ts"]
+  "include": ["src/index.ts", "src/global.d.ts"]
 }

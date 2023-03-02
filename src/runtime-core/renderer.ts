@@ -17,7 +17,9 @@ import { Text } from "./vnode";
 import { shouldUpdateComponent } from "./componentRenderUtils";
 
 export const render = function (vnode, container) {
-    console.log("调用 patch");
+    // console.log("调用 patch");
+    const debug = window['debug']
+    debug && debug.mainPath('调用 patch')()
     patch(null, vnode, container);
 };
 

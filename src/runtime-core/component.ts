@@ -2,7 +2,7 @@ import { initProps } from "./componentProps";
 import { initSlots } from "./componentSlots";
 import { emit } from "./componentEmits";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
-import { proxyRefs } from "@vue/reactivity";
+import { proxyRefs, shallowReadonly } from "@vue/reactivity";
 
 /**
  * @description: 创建组件实例
@@ -61,7 +61,8 @@ function setupStatefulComponent(instance) {
     const context = createSetupContext(instance);
     // 设置 currentInstance 的值
     setCurrentInstance(instance);
-    const setupResult = setup && setup(instance.props, context);
+    // 真实场景里应该只有 dev 环境会把 props 设置为只读
+    const setupResult = setup && setup(shallowReadonly(instance.props), context);
     setCurrentInstance(null);
     // 3. 处理 setupResult
     handleSetupResult(instance, setupResult);
