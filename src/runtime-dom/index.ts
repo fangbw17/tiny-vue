@@ -22,6 +22,11 @@ export function hostPatchProp(el, key, preValue, nextValue) {
             }
             break;
         case "onClick":
+            if (preValue) {
+                // 移除旧值
+                el.removeEventListener('click', preValue)
+            }
+            // 绑定新值
             el.addEventListener("click", nextValue);
             break;
     }

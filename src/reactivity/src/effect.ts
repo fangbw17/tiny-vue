@@ -1,4 +1,3 @@
-import { trigger } from "../../../lib/tiny-vue.esm";
 import { createDep } from "./dep";
 
 // 当前的 effect
