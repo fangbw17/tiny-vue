@@ -14,6 +14,7 @@ import { h } from "./h";
 import { setupComponent } from "./component";
 import { queueJob } from "./scheduler";
 import { Text } from "./vnode";
+import { shouldUpdateComponent } from "./componentRenderUtils";
 
 export const render = function (vnode, container) {
     console.log("调用 patch");
@@ -340,7 +341,19 @@ function mountComponent(vnode, container, parentComponent) {
 }
 
 // 更新组件
-function updateComponent(n1, n2, container) {}
+function updateComponent(n1, n2, container) {
+    console.log('更新组件');
+    const instance = (n2.component = n1.component)
+    // 是否有更新 props
+    if (shouldUpdateComponent(n1, n2)) {
+        console.log('组件需要更新')
+        instance.next = n2;
+    } else {
+        n2.component = n1.component
+        n2.el = n1.el
+        instance.vnode = n2
+    }
+}
 
 function setupRenderEffect(instance, container) {
     // 调用 render
