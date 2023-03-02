@@ -1,7 +1,8 @@
 const publicPropertiesMap = {
     // 当用户调用 instance.proxy.$emit 时会触发
     $emit: (i) => i.emit,
-    $slots: (i) => i.slots
+    $slots: (i) => i.slots,
+    $props: (i) => i.props
 };
 
 export const PublicInstanceProxyHandlers = {

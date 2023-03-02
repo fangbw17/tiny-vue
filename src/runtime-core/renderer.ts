@@ -18,8 +18,8 @@ import { shouldUpdateComponent } from "./componentRenderUtils";
 
 export const render = function (vnode, container) {
     // console.log("调用 patch");
-    const debug = window['debug']
-    debug && debug.mainPath('调用 patch')()
+    const debug = window["debug"];
+    debug && debug.mainPath("调用 patch")();
     patch(null, vnode, container);
 };
 
@@ -344,16 +344,24 @@ function mountComponent(vnode, container, parentComponent) {
 
 // 更新组件
 function updateComponent(n1, n2, container) {
-    console.log('更新组件');
-    const instance = (n2.component = n1.component)
+    console.log("更新组件");
+    const instance = (n2.component = n1.component);
     // 是否有更新 props
     if (shouldUpdateComponent(n1, n2)) {
-        console.log('组件需要更新')
+        console.log("组件需要更新");
         instance.next = n2;
+        // 更新组件
+        // update 是在 setupRenderEffect 中初始化的
+        // update 函数除了当内部的响应式对象发生改变时会调用
+        // 还可以主动的调用（effect 特性）
+        // 调用 update 更新调用 patch 逻辑
+        // 在 update 中调用 next 变成了 n2
+        // TODO 在 update 中处理 next 逻辑
+        instance.update();
     } else {
-        n2.component = n1.component
-        n2.el = n1.el
-        instance.vnode = n2
+        n2.component = n1.component;
+        n2.el = n1.el;
+        instance.vnode = n2;
     }
 }
 
@@ -395,6 +403,13 @@ function setupRenderEffect(instance, container) {
                 instance.isMounted = true;
             } else {
                 console.log("更新逻辑: ", Date.now());
+                const { next, vnode } = instance;
+
+                // next 存在，说明需要更新组件的 props、slots 等
+                if (next) {
+                    next.el = vnode.el;
+                    updateComponentPreRender(instance, next);
+                }
                 // 获取新的 subTree
                 const proxyToUse = instance.proxy;
                 const nextTree = instance.render.call(proxyToUse, proxyToUse);
@@ -422,4 +437,12 @@ function setupRenderEffect(instance, container) {
             },
         }
     );
+}
+
+function updateComponentPreRender(instance, nextVNode) {
+    const { props } = nextVNode;
+    console.log("更新组件的 props", props);
+    instance.props = props;
+    console.log("更新组件的 slots");
+    // TODO
 }

@@ -13,6 +13,7 @@ export const createComponentInstance = function (vnode: any, parent) {
     const instance = {
         type: vnode.type,
         vnode,
+        next: null, // 需要更新的 vnode, 用于更新 component 类型的组件
         props: {},
         proxy: null,
         isMounted: false,

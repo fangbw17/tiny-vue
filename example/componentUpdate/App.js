@@ -4,7 +4,8 @@ const Child = {
     name: "Child",
     setup(props, context) {},
     render() {
-        return h("div", {}, 'child');
+        console.log('this.$prosp', this.$props);
+        return h("div", {}, 'child' + '-' + this.$props.msg);
     },
 };
 
@@ -14,7 +15,7 @@ export default {
         const msg = ref("old");
 
         const changeProps = () => {
-            msg.value = "new";
+            msg.value = msg.value === 'old' ? 'new' : 'old';
         };
 
         return {
