@@ -1,4 +1,4 @@
-import { createVNode } from "./createVNode";
+import { createVNode } from "./vnode";
 export const h = function (
     type: any,
     props: any,

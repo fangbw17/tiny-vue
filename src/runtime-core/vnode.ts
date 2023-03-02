@@ -42,3 +42,25 @@ function getShapeFlag(type: any): any {
     ? ShapeFlags.ELEMENT
     : ShapeFlags.STATEFUL_COMPONENT
 }
+
+export function normalizeChildren(vnode, children) {
+    if (typeof children === 'object') {
+        // 标识 slots_children 类型
+        if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
+
+        } else {
+            vnode.shapeFlag |= ShapeFlags.SLOTS_CHILDREN
+        }
+    }
+}
+
+export function normalizeVNode(child) {
+
+}
+
+// Text 使用 Symbol 唯一标识
+export const Text = Symbol('Text');
+
+export function createTextVNode(text: string = "") {
+    return createVNode(Text, {}, text)
+}

@@ -6,11 +6,14 @@ import {
     hostPatchProp,
     hostInsert,
     hostRemove,
+    hostSetText,
+    hostCreateText,
 } from "../runtime-dom";
 import { effect } from "@vue/reactivity";
 import { h } from "./h";
 import { setupComponent } from "./component";
 import { queueJob } from "./scheduler";
+import { Text } from "./vnode";
 
 export const render = function (vnode, container) {
     console.log("调用 patch");
@@ -27,8 +30,9 @@ export const render = function (vnode, container) {
 function patch(n1, n2, container = null, parentComponent = null) {
     const { type, shapeFlag } = n2;
     switch (type) {
-        case "text":
+        case Text:
             // 文字
+            processText(n1, n2, container);
             break;
         case "comment":
             // 注释
@@ -46,6 +50,31 @@ function patch(n1, n2, container = null, parentComponent = null) {
                 console.log("处理 component");
                 processComponent(n1, n2, container, parentComponent);
             }
+    }
+}
+
+// 文字处理
+function processText(n1, n2, container) {
+    if (!n1) {
+        // 未挂载
+        mountText(n2, container);
+    } else {
+        updateText(n1, n2, container);
+    }
+}
+
+// 挂载文字
+function mountText(vnode, container) {
+    const dom = (vnode.el = hostCreateText(vnode.children as string));
+    hostInsert(dom, container);
+}
+
+// 更新文字
+function updateText(n1, n2, container) {
+    const el = (n2.el = n1.el);
+    if (n2.children !== n1.children) {
+        console.log("更新 Text 类型的节点");
+        hostSetText(el, n2.children as string);
     }
 }
 

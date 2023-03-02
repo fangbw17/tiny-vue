@@ -1,4 +1,5 @@
 import { initProps } from "./componentProps";
+import { initSlots } from "./componentSlots";
 import { emit } from "./componentEmits";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
 import { proxyRefs } from "@vue/reactivity";
@@ -27,25 +28,26 @@ export const createComponentInstance = function (vnode: any, parent) {
     // 在 prod 环境下的 ctx 只是下面简单的结构
     // 在 dev 中更复杂
     instance.ctx = {
-        _: instance
-    }
+        _: instance,
+    };
 
     // emit 的实现绑定
     instance.emit = emit.bind(null, instance) as any;
+
     return instance;
 };
 
 export function setupComponent(instance) {
     // 从实例上取出 props
-    const { props } = instance.vnode;
+    const { props, children } = instance.vnode;
     // 处理 props
     initProps(instance, props);
     // 处理 slots
-    // initSlots()
+    initSlots(instance, children)
+
     setupStatefulComponent(instance);
 }
 
-function initSlots() {}
 
 function setupStatefulComponent(instance) {
     // 1. 创建 proxy
@@ -53,14 +55,14 @@ function setupStatefulComponent(instance) {
     // proxy 对象代理了 instance.ctx 对象
     // 在使用的时候需要使用 instance.proxy 对象
     // 因为在 prod 和 dev 下 instance.ctx 是不同的
-    instance.proxy = new Proxy(instance.ctx, PublicInstanceProxyHandlers)
+    instance.proxy = new Proxy(instance.ctx, PublicInstanceProxyHandlers);
     const { setup } = instance.type;
     // 2. 调用 setup() 参数: props、context
     const context = createSetupContext(instance);
     // 设置 currentInstance 的值
-    setCurrentInstance(instance)
+    setCurrentInstance(instance);
     const setupResult = setup && setup(instance.props, context);
-    setCurrentInstance(null)
+    setCurrentInstance(null);
     // 3. 处理 setupResult
     handleSetupResult(instance, setupResult);
 }
@@ -101,11 +103,11 @@ function applyOptions() {
     // 兼容 vue2.x
 }
 
-let currentInstance = null
+let currentInstance = null;
 export function getCurrentInstance() {
-    return currentInstance
+    return currentInstance;
 }
 
 export function setCurrentInstance(instance) {
-    currentInstance = instance
+    currentInstance = instance;
 }

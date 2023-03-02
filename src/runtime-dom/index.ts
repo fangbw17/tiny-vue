@@ -40,3 +40,13 @@ export function hostRemove(child) {
     const parent = child.parentNode;
     if (parent) parent.removeChild(child);
 }
+
+export function hostSetText(el, text) {
+    el.textContent = text
+}
+
+export function hostCreateText(type) {
+    console.log('hostCreateText');
+    const dom = document.createTextNode(type)
+    return dom
+}

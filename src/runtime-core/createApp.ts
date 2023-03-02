@@ -1,5 +1,5 @@
 import { render } from "./renderer";
-import { createVNode } from "./createVNode";
+import { createVNode } from "./vnode";
 export const createApp = function (rootComponent: any, rootProps: object) {
     const app = {
         _component: rootComponent,
