@@ -2,12 +2,13 @@ import { initProps } from "./componentProps";
 import { emit } from "./componentEmits";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
 import { proxyRefs } from "@vue/reactivity";
+
 /**
  * @description: 创建组件实例
  * @param {any} vnode
  * @return {*}
  */
-export const createComponentInstance = function (vnode: any) {
+export const createComponentInstance = function (vnode: any, parent) {
     const instance = {
         type: vnode.type,
         vnode,
@@ -18,6 +19,8 @@ export const createComponentInstance = function (vnode: any) {
         slots: {}, // 插槽
         ctx: {}, // 上下文
         setupState: {}, // setup 的返回值
+        parent,
+        provides: parent ? parent.provides : {},
         emit: () => {},
     };
 
@@ -54,7 +57,10 @@ function setupStatefulComponent(instance) {
     const { setup } = instance.type;
     // 2. 调用 setup() 参数: props、context
     const context = createSetupContext(instance);
+    // 设置 currentInstance 的值
+    setCurrentInstance(instance)
     const setupResult = setup && setup(instance.props, context);
+    setCurrentInstance(null)
     // 3. 处理 setupResult
     handleSetupResult(instance, setupResult);
 }
@@ -85,12 +91,21 @@ function handleSetupResult(instance, setupResult) {
 
     if (!instance.render) {
         // 调用 compile 模板编译 template
+        instance.render = component.render;
     }
-    instance.render = component.render;
 
     // applyOptions()
 }
 
 function applyOptions() {
     // 兼容 vue2.x
+}
+
+let currentInstance = null
+export function getCurrentInstance() {
+    return currentInstance
+}
+
+export function setCurrentInstance(instance) {
+    currentInstance = instance
 }

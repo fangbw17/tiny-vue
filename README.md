@@ -67,3 +67,7 @@
                         1. 调用 effect 函数，传一个方法入参
                 * updateComponent
     
+
+
+## bug
+* example/apiinject/App.js 注释代码无法实现功能。 

@@ -24,7 +24,7 @@ export const render = function (vnode, container) {
  * @param {*} container 容器
  * @return {*}
  */
-function patch(n1, n2, container = null) {
+function patch(n1, n2, container = null, parentComponent = null) {
     const { type, shapeFlag } = n2;
     switch (type) {
         case "text":
@@ -44,7 +44,7 @@ function patch(n1, n2, container = null) {
                 processElement(n1, n2, container);
             } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
                 console.log("处理 component");
-                processComponent(n1, n2, container);
+                processComponent(n1, n2, container, parentComponent);
             }
     }
 }
@@ -286,20 +286,23 @@ function patchKeyedChildren(c1: any[], c2: any[], container) {
 }
 
 // 处理组件
-function processComponent(n1, n2, container) {
+function processComponent(n1, n2, container, parentComponent) {
     if (!n1) {
         // 挂载组件
-        mountComponent(n2, container);
+        mountComponent(n2, container, parentComponent);
     } else {
         // 更新组件
-        updateComponent(n1, n2, container)
+        updateComponent(n1, n2, container);
     }
 }
 
 // 挂载组件
-function mountComponent(vnode, container) {
+function mountComponent(vnode, container, parentComponent) {
     // 创建组件实例
-    const instance = (vnode.component = createComponentInstance(vnode));
+    const instance = (vnode.component = createComponentInstance(
+        vnode,
+        parentComponent
+    ));
     console.log(`创建组件实例:${instance.type.name}`);
     // 加工组件实例
     setupComponent(instance);
@@ -308,9 +311,7 @@ function mountComponent(vnode, container) {
 }
 
 // 更新组件
-function updateComponent(n1, n2, container) {
-
-}
+function updateComponent(n1, n2, container) {}
 
 function setupRenderEffect(instance, container) {
     // 调用 render
@@ -322,7 +323,7 @@ function setupRenderEffect(instance, container) {
         function componentEffect() {
             if (!instance.isMounted) {
                 console.log("调用 render,获取 subTree");
-                const proxyToUse = instance.proxy
+                const proxyToUse = instance.proxy;
                 const subTree = (instance.subTree = instance.render.call(
                     proxyToUse,
                     proxyToUse
@@ -344,14 +345,14 @@ function setupRenderEffect(instance, container) {
                 // 而 subTree 就是当前的这个箱子（组件）装的东西
                 // 箱子（组件）只是个概念，它实际是不需要渲染的
                 // 要渲染的是箱子里面的 subTree
-                patch(null, subTree, container);
+                patch(null, subTree, container, instance);
 
                 console.log(`${instance.type.name}:触发 mounted hook`);
                 instance.isMounted = true;
             } else {
                 console.log("更新逻辑: ", Date.now());
                 // 获取新的 subTree
-                const proxyToUse = instance.proxy
+                const proxyToUse = instance.proxy;
                 const nextTree = instance.render.call(proxyToUse, proxyToUse);
                 // 替换之前的 subTree
                 const prevTree = instance.subTree;
@@ -362,7 +363,7 @@ function setupRenderEffect(instance, container) {
                 console.log("onVnodeBeforeUpdate hook");
 
                 // 用旧的 vnode 和新的 vnode 交给 patch 来处理
-                patch(prevTree, nextTree, prevTree.el);
+                patch(prevTree, nextTree, prevTree.el, instance);
 
                 // 触发 updated hook
                 console.log("updated hook");
@@ -373,8 +374,8 @@ function setupRenderEffect(instance, container) {
         {
             scheduler: (effect) => {
                 // const that = this.scheduler
-                queueJob(effect)
-            }
+                queueJob(effect);
+            },
         }
     );
 }

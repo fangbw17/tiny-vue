@@ -31,6 +31,8 @@ export const createVNode = function (
         vnode.shapeFlag = vnode.shapeFlag | ShapeFlags.TEXT_CHILDREN
     }
 
+    normalizeChildren(vnode, children)
+
     return vnode
 }
 
