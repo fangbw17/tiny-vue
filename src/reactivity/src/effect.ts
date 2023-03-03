@@ -1,4 +1,5 @@
 import { createDep } from "./dep";
+import { extend } from "../../shared/index";
 
 // 当前的 effect
 let activeEffect = null;
@@ -18,14 +19,18 @@ export class ReactiveEffect {
     }
 }
 
-export function effect(fn) {
+export function effect(fn, options) {
     const _effect = new ReactiveEffect(fn);
+    extend(_effect, options)
     _effect.run();
+
+    const runner = _effect.run.bind(_effect)
+    return runner
 }
 
 // 追踪依赖
 export function track(target, type, key) {
-    if (!activeEffect) return
+    if (!activeEffect) return;
     /*
 - WeakMap
     key: object
@@ -49,35 +54,40 @@ export function track(target, type, key) {
     if (!dep) {
         depsMap.set(key, (dep = createDep()));
     }
-    trackEffects(dep)
+    trackEffects(dep);
 }
 
 function trackEffects(dep) {
     // 用 dep 存放 effect
-    dep.add(activeEffect)
+    dep.add(activeEffect);
 }
-
 
 // 触发依赖
 export function trigger(target, type, key) {
-    let deps: Array<any> = []
+    let deps: Array<any> = [];
 
-    const depsMap = targetMap.get(target)
+    const depsMap = targetMap.get(target);
 
-    const dep = depsMap.get(key)
+    const dep = depsMap.get(key);
 
-    deps.push(dep)
+    deps.push(dep);
 
-    const effects: Array<any> = []
-    deps.forEach(dep => {
+    const effects: Array<any> = [];
+    deps.forEach((dep) => {
         // 解构 dep 得到的是 dep 内部存储的 effect
-        effects.push(...dep)
-    })
-    triggerEffects(createDep(effects))
+        effects.push(...dep);
+    });
+    triggerEffects(createDep(effects));
 }
 
 function triggerEffects(dep) {
     for (const effect of dep) {
-        effect.run()
+        // 调度器存在，则把响应事件交给用户处理
+        if (effect.scheduler) {
+            effect.scheduler()
+        } else {
+            // 直接执行副作用函数
+            effect.run();
+        }
     }
 }

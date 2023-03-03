@@ -1,8 +1,12 @@
 export * from "./shapeFlags";
 
+// 是否为对象
 export const isObject = (val) => {
     return val !== null && typeof val === 'object'
 }
+
+// 对象复制
+export const extend = Object.assign
 
 const camelizeRE = /-(\w)/g;
 
