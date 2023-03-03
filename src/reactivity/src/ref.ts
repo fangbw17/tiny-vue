@@ -1,4 +1,4 @@
-import { trackEffects, triggerEffects } from "./effect";
+import { trackEffects, triggerEffects, isTracking } from "./effect";
 import { createDep } from "./dep";
 import { isObject, hasChanged } from "../../shared";
 import { reactive } from "./reactive";
@@ -50,10 +50,12 @@ function convert(value) {
     return isObject(value) ? reactive(value) : value;
 }
 
-function trackRefValue(ref) {
-    trackEffects(ref.dep);
+export function trackRefValue(ref) {
+    if (isTracking()) {
+        trackEffects(ref.dep);
+    }
 }
 
-function triggerRefValue(ref) {
+export function triggerRefValue(ref) {
     triggerEffects(ref.dep);
 }

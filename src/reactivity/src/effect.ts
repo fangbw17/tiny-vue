@@ -2,7 +2,7 @@ import { createDep } from "./dep";
 import { extend } from "../../shared/index";
 
 // 当前的 effect
-let activeEffect = null;
+let activeEffect = void 0;
 // 存储 Map
 const targetMap = new WeakMap();
 
@@ -10,14 +10,14 @@ const targetMap = new WeakMap();
 export class ReactiveEffect {
     active = true
     deps = []
-    constructor(public fn) {}
+    constructor(public fn, public scheduler?) {}
 
     run() {
         // 执行副作用函数
         // 给全局的 activeEffect 赋值
         activeEffect = this as any;
 
-        this.fn();
+        return this.fn();
     }
 
     stop() {
@@ -107,6 +107,10 @@ export function trackEffects(dep) {
     // 用 dep 存放 effect
     dep.add(activeEffect);
     (activeEffect as any).deps.push(dep)
+}
+
+export function isTracking() {
+    return activeEffect !== undefined
 }
 
 
