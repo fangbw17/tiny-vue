@@ -91,7 +91,7 @@ export function trigger(target, type, key) {
     triggerEffects(createDep(effects));
 }
 
-function triggerEffects(dep) {
+export function triggerEffects(dep) {
     for (const effect of dep) {
         // 调度器存在，则把响应事件交给用户处理
         if (effect.scheduler) {
@@ -103,7 +103,7 @@ function triggerEffects(dep) {
     }
 }
 
-function trackEffects(dep) {
+export function trackEffects(dep) {
     // 用 dep 存放 effect
     dep.add(activeEffect);
     (activeEffect as any).deps.push(dep)

@@ -7,6 +7,9 @@ export const isObject = (val) => {
 
 // 对象复制
 export const extend = Object.assign
+export function hasChanged(value, oldValue) {
+    return !Object.is(value, oldValue)
+}
 
 const camelizeRE = /-(\w)/g;
 

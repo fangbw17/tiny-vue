@@ -51,7 +51,7 @@ function createSetter() {
         // 反射
         const res = Reflect.set(target, key, value, receiver);
         // 注入执行依赖
-        trigger(target, "get", key);
+        trigger(target, "set", key);
         // 返回值
         return res;
     };
