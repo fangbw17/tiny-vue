@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>slots</title>
+</head>
+
+<body>
+    <div id="app"></div>
+
+    <script type="module">
+        import { reactive, effect, stop } from '../../lib/tiny-vue.esm.js'
+        let dummy = 0
+        const obj = reactive({ prop: 1 })
+        const runner = effect(
+            () => {
+                dummy = obj.prop
+            }
+        )
+        obj.prop = 2
+        console.log(dummy);
+        stop(runner)
+        obj.prop = 3
+        console.log(dummy);
+        obj.prop = 4
+        console.log(dummy);
+    </script>
+</body>
+
+</html>
