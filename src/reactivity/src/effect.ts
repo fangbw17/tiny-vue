@@ -3,6 +3,8 @@ import { extend } from "../../shared/index";
 
 // 当前的 effect
 let activeEffect = void 0;
+// 追踪标识
+let shouldTrack = false
 // 存储 Map
 const targetMap = new WeakMap();
 
@@ -18,11 +20,26 @@ export class ReactiveEffect {
 
     run() {
         // 执行副作用函数
+        console.log('run');
+
+        // 执行 fn, 但是不收集依赖
+        if (!this.active) {
+            return this.fn()
+        }
+
+        // 执行 fn 收集依赖
+        // 可以开始收集依赖了
+        shouldTrack = true
+
         // 给全局的 activeEffect 赋值
         activeEffect = this as any;
 
         console.log("执行 副作用函数 fn");
-        return this.fn();
+        const result = this.fn()
+        // 重置
+        shouldTrack = false
+        activeEffect = undefined
+        return result
     }
 
     stop() {
@@ -114,15 +131,19 @@ export function triggerEffects(dep) {
 
 export function trackEffects(dep) {
     // 用 dep 存放 effect
-    let shouldTrack = false;
     if (!activeEffect) return;
 
-    dep.add(activeEffect);
-    (activeEffect as any).deps.push(dep);
+    if (!isTracking()) return 
+
+    if (!dep.has(activeEffect)) {
+        dep.add(activeEffect);
+        (activeEffect as any).deps.push(dep);
+    }
+
 }
 
 export function isTracking() {
-    return activeEffect !== undefined;
+    return activeEffect !== undefined || shouldTrack;
 }
 
 function cleanupEffect(effect) {
