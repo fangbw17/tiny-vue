@@ -88,5 +88,5 @@ export function unRef(ref) {
 }
 
 export function isRef(value) {
-    return value.__v_isRef
+    return !!value.__v_isRef
 }

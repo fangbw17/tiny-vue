@@ -1,38 +1,44 @@
-
-import typescript from "rollup-plugin-typescript2"
-import sourceMaps from 'rollup-plugin-sourcemaps'
-import resolve from '@rollup/plugin-node-resolve'
-import commonjs from 'rollup-plugin-commonjs'
-import replace from '@rollup/plugin-replace'
+import typescript from "rollup-plugin-typescript2";
+import sourceMaps from "rollup-plugin-sourcemaps";
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import replace from "@rollup/plugin-replace";
 
 export default {
-    input: 'src/compiler-core/src/index.ts',
+    input: "src/compiler-core/src/index.ts",
     output: [
         {
             format: "cjs",
-            file: 'lib/tiny-vue.cjs.js',
+            file: "lib/tiny-vue.cjs.js",
             sourcemap: true,
         },
         {
             name: "vue",
             format: "es",
-            file: 'lib/tiny-vue.esm.js',
+            file: "lib/tiny-vue.esm.js",
             sourcemap: true,
         },
     ],
     plugins: [
         typescript({
-            outDir: 'lib',
+            outDir: "lib",
             declaration: true,
-            declarationDir: 'lib'
+            declarationDir: "lib",
         }),
         replace({
-            'process.env.NODE_ENV': JSON.stringify('development'),
-            'process.env.VUE_ENV': JSON.stringify('browser'),
-            'process.env.LANGUAGE': JSON.stringify(process.env.LANGUAGE)
+            "process.env.NODE_ENV": JSON.stringify("development"),
+            "process.env.VUE_ENV": JSON.stringify("browser"),
+            "process.env.LANGUAGE": JSON.stringify(process.env.LANGUAGE),
         }),
         resolve(),
         commonjs(),
-        sourceMaps()
-    ]
-}
+        // typescript(),
+        sourceMaps(),
+    ],
+    onwarn: (msg, warn) => {
+        // 忽略 Circular 的错误
+        if (!/Circular/.test(msg)) {
+            warn(msg);
+        }
+    },
+};

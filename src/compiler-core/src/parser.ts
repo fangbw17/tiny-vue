@@ -1,4 +1,9 @@
-import { NodeTypes } from "./ast";
+import { NodeTypes, ElementTypes } from "./ast";
+
+const enum TagType {
+    Start,
+    End,
+}
 
 export function baseParse(content: string) {
     const context = createParserContext(content);
@@ -16,21 +21,48 @@ function parseChildren(context) {
     console.log("开始解析 children");
     const nodes: any[] = [];
 
-    let node = {};
-    // {{ 开头
-    if (context.source.startsWith("{{")) {
-        node = parseMustache(context);
-    } else {
-        node = parseText(context);
+    while (!isEnd(context)) {
+        let node;
+        if (context.source.startsWith("{{")) {
+            // {{ 开头
+            node = parseMustache(context);
+        } else if (context.source.startsWith("<")) {
+            // 标签开头
+            if (/[a-z]/i.test(context.source[1])) {
+                // 字母开头
+                node = parseElement(context, TagType.Start);
+            } else if (context.source[1] === "/") {
+                // 结束标签
+                if (/[a-z]/i.test(context.source[2])) {
+                    parseTag(context, TagType.End);
+
+                    continue;
+                }
+            }
+        }
+
+        if (!node) {
+            node = parseText(context);
+        }
+        nodes.push(node);
     }
-    nodes.push(node);
 
     return nodes;
 }
 
+// 解析文本
 function parseText(context): any {
     console.log("解析 text", context);
-    const endIndex = context.source.length;
+    let endIndex = context.source.length;
+
+    const endTokens = ["<", "{{"];
+    for (let i = 0; i < endTokens.length; i++) {
+        const index = context.source.indexOf(endTokens[i])
+        if (index !== -1) {
+            endIndex = index
+        }
+    }    
+
     const content = parseTextData(context, endIndex);
 
     return {
@@ -49,6 +81,7 @@ function parseTextData(context: any, length: number): any {
     return rawText;
 }
 
+// 解析花括号语法
 function parseMustache(context) {
     console.log("解析 mustache", context);
     let content = context.source;
@@ -57,16 +90,19 @@ function parseMustache(context) {
     const startIndex = context.source.indexOf("{{");
     const endIndex = context.source.indexOf("}}");
 
-
     // 没有 {{ 或者 }}
     if (startIndex == -1 || endIndex == -1) {
         console.warn(`${context.source} is not a valid interpolation`);
     } else {
         // 移除 {{
-        advanceBy(context, 2)
-        content = parseSimpleExpress(startIndex, context.source.length - 2, context);
+        advanceBy(context, 2);
+        content = parseSimpleExpress(
+            startIndex,
+            endIndex - 2,
+            context
+        );
         // 移除 }}
-        advanceBy(context, 2)
+        advanceBy(context, 2);
     }
     return {
         type: NodeTypes.INTERPOLATION,
@@ -88,9 +124,62 @@ function parseSimpleExpress(startIndex, endIndex, context) {
     };
 }
 
+function parseElement(context, tagType) {
+    const element = parseTag(context, tagType);
+
+    const children = parseChildren(context);
+
+    // 解析尾部标签</div>
+    if (element && startsWithEndTagOpen(context, element.tag)) {
+        parseTag(context, TagType.End);
+    } else {
+    }
+
+    if (element) {
+        element["children"] = children;
+    }
+    return element;
+}
+
+function parseTag(context, tagType) {
+    // 以 < 开头，后面可能存在 /, 再后面是标签，标签后 制表符等 /> 存在0至多个
+    const match = /^<\/?([a-z][^\r\n\t\f />]*)/i.exec(context.source);
+
+    let tag = "";
+    if (match) {
+        tag = match[1];
+        // 移除开始标签
+        // <div></div>
+        advanceBy(context, match[0].length); // ></div>
+
+        // 暂不考虑 自闭合
+        advanceBy(context, 1); //</div>
+    }
+
+    if (tagType === TagType.End) return;
+
+    return {
+        type: NodeTypes.ELEMENT,
+        tag: tag,
+        tagType: ElementTypes.ELEMENT,
+    };
+}
+
+function startsWithEndTagOpen(context, tag) {
+    // 以 </ 开头，并且 取开始标签值对应的长度，转成小写后，对比是否相同
+    return (
+        context.source.startsWith("</") &&
+        context.source.slice(2, tag.length).toLowerCase() === tag.toLowerCase()
+    );
+}
+
 function advanceBy(context, numberOfCharacters) {
     console.log("移动光标", context, numberOfCharacters);
     context.source = context.source.slice(numberOfCharacters);
+}
+
+function isEnd(context) {
+    return !context.source;
 }
 
 function createRoot(children) {

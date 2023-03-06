@@ -6,7 +6,7 @@ export function hostCreateElement(type: any) {
 
 export function hostSetElementText(el: HTMLElement, text) {
     console.log("hostSetElementText", el, text);
-    el.innerText = text;
+    el.textContent = text;
 }
 
 export function hostPatchProp(el, key, preValue, nextValue) {
