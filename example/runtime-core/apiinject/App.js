@@ -4,7 +4,7 @@ import {
     getCurrentInstance,
     provide,
     inject,
-} from "../../lib/tiny-vue.esm.js";
+} from "../../../lib/tiny-vue.esm.js";
 
 const son = {
     name: "son",
