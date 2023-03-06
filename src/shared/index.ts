@@ -11,6 +11,13 @@ export function hasChanged(value, oldValue) {
     return !Object.is(value, oldValue)
 }
 
+export function hasOwn(val, key) {
+    return Object.prototype.hasOwnProperty.call(val, key)
+}
+
+// 以 on + 一个大写字母开头
+export const isOn = (key) => /^on[A-Z]/.test(key) 
+
 const camelizeRE = /-(\w)/g;
 
 /**

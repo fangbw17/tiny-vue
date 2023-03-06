@@ -17,21 +17,21 @@
         console.log('ast: ', ast);
         const element = ast.children[0]
 
-        const calls = []
-        const plugin = (node, context) => {
-            calls.push([node, { ...context }])
-        }
+        // const calls = []
+        // const plugin = (node, context) => {
+        //     calls.push([node, { ...context }])
+        // }
 
         transform(ast, {
-            nodeTransforms: [plugin],
+            // nodeTransforms: [plugin],
         })
 
         const div = ast.children[0]
-        console.log(calls.length === 4);
-        console.log(calls[0]);
-        console.log(calls[1]);
-        console.log(calls[2]);
-        console.log(calls[3]);
+        // console.log(calls.length === 4);
+        // console.log(calls[0]);
+        // console.log(calls[1]);
+        // console.log(calls[2]);
+        // console.log(calls[3]);
 
     </script>
 </body>

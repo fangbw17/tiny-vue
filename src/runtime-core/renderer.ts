@@ -339,7 +339,7 @@ function mountComponent(vnode, container, parentComponent) {
     // 加工组件实例
     setupComponent(instance);
 
-    setupRenderEffect(instance, container);
+    setupRenderEffect(instance, vnode, container);
 }
 
 // 更新组件
@@ -365,7 +365,7 @@ function updateComponent(n1, n2, container) {
     }
 }
 
-function setupRenderEffect(instance, container) {
+function setupRenderEffect(instance, vnode, container) {
     // 调用 render
     // 应该传入 ctx 也就是 proxy
     // ctx 可以选择暴露给用户的 api
@@ -396,6 +396,8 @@ function setupRenderEffect(instance, container) {
             // 箱子（组件）只是个概念，它实际是不需要渲染的
             // 要渲染的是箱子里面的 subTree
             patch(null, subTree, container, instance);
+            // 把 root element 赋值给 组件的vnode.el ，为后续调用 $el 的时候获取值
+            vnode.el = subTree.el;
 
             console.log(`${instance.type.name}:触发 mounted hook`);
             instance.isMounted = true;

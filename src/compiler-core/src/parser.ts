@@ -186,5 +186,6 @@ function createRoot(children) {
     return {
         type: NodeTypes.ROOT,
         children,
+        helpers: [],
     };
 }

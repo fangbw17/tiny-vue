@@ -58,15 +58,19 @@ function setupStatefulComponent(instance) {
     // 因为在 prod 和 dev 下 instance.ctx 是不同的
     instance.proxy = new Proxy(instance.ctx, PublicInstanceProxyHandlers);
     const { setup } = instance.type;
-    // 2. 调用 setup() 参数: props、context
-    const context = createSetupContext(instance);
-    // 设置 currentInstance 的值
-    setCurrentInstance(instance);
-    // 真实场景里应该只有 dev 环境会把 props 设置为只读
-    const setupResult = setup && setup(shallowReadonly(instance.props), context);
-    setCurrentInstance(null);
-    // 3. 处理 setupResult
-    handleSetupResult(instance, setupResult);
+    if (setup) {
+        // 2. 调用 setup() 参数: props、context
+        const context = createSetupContext(instance);
+        // 设置 currentInstance 的值
+        setCurrentInstance(instance);
+        // 真实场景里应该只有 dev 环境会把 props 设置为只读
+        const setupResult = setup && setup(shallowReadonly(instance.props), context);
+        setCurrentInstance(null);
+        // 3. 处理 setupResult
+        handleSetupResult(instance, setupResult);
+    } else {
+        finishComponentSetup(instance)
+    }
 }
 
 function createSetupContext(instance) {
@@ -91,6 +95,12 @@ function handleSetupResult(instance, setupResult) {
         instance.setupState = proxyRefs(setupResult);
     }
 
+    finishComponentSetup(instance)
+
+}
+
+function finishComponentSetup(instance) {
+    
     const component = instance.type;
 
     if (!instance.render) {
