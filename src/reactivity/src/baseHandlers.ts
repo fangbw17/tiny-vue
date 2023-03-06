@@ -1,5 +1,11 @@
 import { track, trigger } from "./effect";
-import { ReactiveFlags, reactive, reactiveMap } from "./reactive";
+import {
+    ReactiveFlags,
+    reactive,
+    reactiveMap,
+    readonly,
+    readonlyMap,
+} from "./reactive";
 import { isObject } from "../../shared/index";
 const get = createGetter();
 const set = createSetter();
@@ -20,19 +26,30 @@ function createGetter(isReadonly = false, shallow = false) {
             );
         };
 
+        const isExistInReadonlyMap = () => {
+            return (
+                key === ReactiveFlags.RAW &&
+                receiver === readonlyMap.get(target)
+            )
+        }
+
         if (key === ReactiveFlags.IS_REACTIVE) {
             // 判断 reactive 类型
-            return true;
-        } else if (isExistInReactiveMap()){
-            return target
+            return !isReadonly;
+        } else if (key === ReactiveFlags.IS_READONLY) {
+            return isReadonly
+        } else if (isExistInReactiveMap() || isExistInReadonlyMap()) {
+            return target;
         }
         // 反射
         const res = Reflect.get(target, key, receiver);
         if (isObject(res)) {
-            return reactive(res);
+            return isReadonly ? readonly(res) : reactive(res);
         }
-        // 注入追踪依赖
-        track(target, "get", key);
+        if (!isReadonly) {
+            // 注入追踪依赖
+            track(target, "get", key);
+        }
         // 返回值
         return res;
     };
@@ -60,4 +77,12 @@ function createSetter() {
 export const mutableHandlers = {
     get,
     set,
+};
+
+export const readonlyHandlers = {
+    get: createGetter(true),
+    set(target, key) {
+        console.warn(`Set operation on key "${String(key)}" failed target is readonly.`)
+        return true
+    },
 };

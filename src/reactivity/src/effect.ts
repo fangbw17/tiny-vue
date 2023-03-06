@@ -8,8 +8,8 @@ const targetMap = new WeakMap();
 
 // 依赖收集
 export class ReactiveEffect {
-    active = true
-    deps = []
+    active = true;
+    deps = [];
     constructor(public fn, public scheduler?) {}
 
     run() {
@@ -24,24 +24,24 @@ export class ReactiveEffect {
         if (this.active) {
             // 如果第一次执行 stop 后 active 就 false
             // 防止重复调用
-            cleanupEffect(this)
-            this.active = false
+            cleanupEffect(this);
+            this.active = false;
         }
     }
 }
 
 export function effect(fn, options = {}) {
     const _effect = new ReactiveEffect(fn);
-    extend(_effect, options)
+    extend(_effect, options);
     _effect.run();
 
-    const runner: any = _effect.run.bind(_effect)
-    runner.effect = _effect
-    return runner
+    const runner: any = _effect.run.bind(_effect);
+    runner.effect = _effect;
+    return runner;
 }
 
 export function stop(runner) {
-    runner.effect.stop()
+    runner.effect.stop();
 }
 
 // 追踪依赖
@@ -95,7 +95,7 @@ export function triggerEffects(dep) {
     for (const effect of dep) {
         // 调度器存在，则把响应事件交给用户处理
         if (effect.scheduler) {
-            effect.scheduler()
+            effect.scheduler();
         } else {
             // 直接执行副作用函数
             effect.run();
@@ -105,20 +105,22 @@ export function triggerEffects(dep) {
 
 export function trackEffects(dep) {
     // 用 dep 存放 effect
+    let shouldTrack = false;
+    if (!activeEffect) return;
+
     dep.add(activeEffect);
-    (activeEffect as any).deps.push(dep)
+    (activeEffect as any).deps.push(dep);
 }
 
 export function isTracking() {
-    return activeEffect !== undefined
+    return activeEffect !== undefined;
 }
-
 
 function cleanupEffect(effect) {
     // 找到所有依赖这个 effect 的响应式对象
     // 从这些响应式对象里面把 effect 给删除掉
-    effect.deps.forEach(dep => {
-        dep.delete(effect)
-    })
-    effect.deps.length = 0
+    effect.deps.forEach((dep) => {
+        dep.delete(effect);
+    });
+    effect.deps.length = 0;
 }

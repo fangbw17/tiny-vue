@@ -7,6 +7,7 @@ export class RefImpl {
     private _rawValue: any;
     private _value: any;
     public dep;
+    public __v_isRef = true
 
     constructor(value) {
         // 原始值
@@ -58,4 +59,34 @@ export function trackRefValue(ref) {
 
 export function triggerRefValue(ref) {
     triggerEffects(ref.dep);
+}
+
+
+// 解构 ref
+const shallowUnwrapHandlers = {
+    get(target, key, receiver) {
+        const res = Reflect.get(target, key, receiver)
+        return unRef(ref)
+    },
+    set(target, key, value, receiver) {
+        const oldValue = target[key]
+        if (isRef(oldValue) && !isRef(value)) {
+            return (target[key].value = value)
+        } else {
+            return Reflect.set(target, key, value, receiver)
+        }
+    }
+}
+
+export function proxyRefs(objectWithRefs) {
+    return new Proxy(objectWithRefs, shallowUnwrapHandlers)
+}
+
+// 把 ref 里面的值拿到
+export function unRef(ref) {
+    return isRef(ref) ? ref.value : ref
+}
+
+function isRef(value) {
+    return value.__v_isRef
 }
