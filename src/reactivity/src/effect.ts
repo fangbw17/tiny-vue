@@ -10,13 +10,16 @@ const targetMap = new WeakMap();
 export class ReactiveEffect {
     active = true;
     deps = [];
-    constructor(public fn, public scheduler?) {}
+    constructor(public fn, public scheduler?) {
+        console.log(`创建 ReactiveEffect 对象`);
+    }
 
     run() {
         // 执行副作用函数
         // 给全局的 activeEffect 赋值
         activeEffect = this as any;
 
+        console.log("执行 副作用函数 fn");
         return this.fn();
     }
 
@@ -46,6 +49,7 @@ export function stop(runner) {
 
 // 追踪依赖
 export function track(target, type, key) {
+    console.log(`触发 track -> target: ${target} type: ${type} key:${key}`);
     if (!activeEffect) return;
     /*
 - WeakMap

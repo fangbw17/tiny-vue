@@ -9,7 +9,7 @@ import {
     hostSetText,
     hostCreateText,
 } from "../runtime-dom";
-import { effect } from "@vue/reactivity";
+import { effect } from "../reactivity/src";
 import { h } from "./h";
 import { setupComponent } from "./component";
 import { queueJob } from "./scheduler";
@@ -371,72 +371,70 @@ function setupRenderEffect(instance, container) {
     // ctx 可以选择暴露给用户的 api
     // 源代码里面是调用的 renderComponentRoot 函数
     // 这里为了简化直接调用 render
-    instance.update = effect(
-        function componentEffect() {
-            if (!instance.isMounted) {
-                console.log("调用 render,获取 subTree");
-                const proxyToUse = instance.proxy;
-                const subTree = (instance.subTree = instance.render.call(
-                    proxyToUse,
-                    proxyToUse
-                ));
-                console.log("subTree", subTree);
 
-                console.log(`${instance.type.name}:触发 beforeMount hook`);
-                console.log(
-                    `${instance.type.name}:触发 onVnodeBeforeMount hook`
-                );
+    function componentUpdateFn() {
+        if (!instance.isMounted) {
+            console.log("调用 render,获取 subTree");
+            const proxyToUse = instance.proxy;
+            const subTree = (instance.subTree = instance.render.call(
+                proxyToUse,
+                proxyToUse
+            ));
+            console.log("subTree", subTree);
 
-                // 这里基于 subTree 再次调用 patch
-                // 基于 render 返回的 vnode ，再次进行渲染
-                // 这里我把这个行为隐喻成开箱
-                // 一个组件就是一个箱子
-                // 里面有可能是 element （也就是可以直接渲染的）
-                // 也有可能还是 component
-                // 这里就是递归的开箱
-                // 而 subTree 就是当前的这个箱子（组件）装的东西
-                // 箱子（组件）只是个概念，它实际是不需要渲染的
-                // 要渲染的是箱子里面的 subTree
-                patch(null, subTree, container, instance);
+            console.log(`${instance.type.name}:触发 beforeMount hook`);
+            console.log(`${instance.type.name}:触发 onVnodeBeforeMount hook`);
 
-                console.log(`${instance.type.name}:触发 mounted hook`);
-                instance.isMounted = true;
-            } else {
-                console.log("更新逻辑: ", Date.now());
-                const { next, vnode } = instance;
+            // 这里基于 subTree 再次调用 patch
+            // 基于 render 返回的 vnode ，再次进行渲染
+            // 这里我把这个行为隐喻成开箱
+            // 一个组件就是一个箱子
+            // 里面有可能是 element （也就是可以直接渲染的）
+            // 也有可能还是 component
+            // 这里就是递归的开箱
+            // 而 subTree 就是当前的这个箱子（组件）装的东西
+            // 箱子（组件）只是个概念，它实际是不需要渲染的
+            // 要渲染的是箱子里面的 subTree
+            patch(null, subTree, container, instance);
 
-                // next 存在，说明需要更新组件的 props、slots 等
-                if (next) {
-                    next.el = vnode.el;
-                    updateComponentPreRender(instance, next);
-                }
-                // 获取新的 subTree
-                const proxyToUse = instance.proxy;
-                const nextTree = instance.render.call(proxyToUse, proxyToUse);
-                // 替换之前的 subTree
-                const prevTree = instance.subTree;
-                instance.subTree = nextTree;
+            console.log(`${instance.type.name}:触发 mounted hook`);
+            instance.isMounted = true;
+        } else {
+            console.log("更新逻辑: ", Date.now());
+            const { next, vnode } = instance;
 
-                // 触发 beforeUpdated hook
-                console.log("beforeUpdated hook");
-                console.log("onVnodeBeforeUpdate hook");
-
-                // 用旧的 vnode 和新的 vnode 交给 patch 来处理
-                patch(prevTree, nextTree, prevTree.el, instance);
-
-                // 触发 updated hook
-                console.log("updated hook");
-                console.log("onVnodeUpdated hook");
-                console.log(Date.now());
+            // next 存在，说明需要更新组件的 props、slots 等
+            if (next) {
+                next.el = vnode.el;
+                updateComponentPreRender(instance, next);
             }
-        },
-        {
-            scheduler: (effect) => {
-                // const that = this.scheduler
-                queueJob(effect);
-            },
+            // 获取新的 subTree
+            const proxyToUse = instance.proxy;
+            const nextTree = instance.render.call(proxyToUse, proxyToUse);
+            // 替换之前的 subTree
+            const prevTree = instance.subTree;
+            instance.subTree = nextTree;
+
+            // 触发 beforeUpdated hook
+            console.log("beforeUpdated hook");
+            console.log("onVnodeBeforeUpdate hook");
+
+            // 用旧的 vnode 和新的 vnode 交给 patch 来处理
+            patch(prevTree, nextTree, prevTree.el, instance);
+
+            // 触发 updated hook
+            console.log("updated hook");
+            console.log("onVnodeUpdated hook");
+            console.log(Date.now());
         }
-    );
+    }
+
+    instance.update = effect(componentUpdateFn, {
+        scheduler: () => {
+            // const that = this.scheduler
+            queueJob(instance.update);
+        },
+    });
 }
 
 function updateComponentPreRender(instance, nextVNode) {

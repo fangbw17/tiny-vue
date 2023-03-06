@@ -2,7 +2,7 @@ import { initProps } from "./componentProps";
 import { initSlots } from "./componentSlots";
 import { emit } from "./componentEmits";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
-import { proxyRefs, shallowReadonly } from "@vue/reactivity";
+import { proxyRefs, shallowReadonly } from "../reactivity/src";
 
 /**
  * @description: 创建组件实例

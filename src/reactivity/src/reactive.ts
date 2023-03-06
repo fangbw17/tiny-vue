@@ -3,10 +3,15 @@
 // 在 get 中收集副作用函数
 // 在 set 中执行副作用函数
 import { readBuilderProgram } from "typescript";
-import { mutableHandlers, readonlyHandlers } from "./baseHandlers";
+import {
+    mutableHandlers,
+    readonlyHandlers,
+    shallowReadonlyHandlers,
+} from "./baseHandlers";
 
 export const reactiveMap = new WeakMap();
 export const readonlyMap = new WeakMap();
+export const shallowReadonlyMap = new WeakMap();
 
 export const enum ReactiveFlags {
     IS_REACTIVE = "__v_isReactive",
@@ -19,15 +24,23 @@ export function reactive(target) {
 }
 
 export function readonly(target) {
-    return createReactiveObject(target, readonlyMap, readonlyHandlers)
+    return createReactiveObject(target, readonlyMap, readonlyHandlers);
+}
+
+export function shallowReadonly(target) {
+    return createReactiveObject(
+        target,
+        shallowReadonlyMap,
+        shallowReadonlyHandlers
+    );
 }
 
 export function isProxy(value) {
-    return isReactive(value) || isReadonly(value)
+    return isReactive(value) || isReadonly(value);
 }
 
 export function isReadonly(value) {
-    return !!value[ReactiveFlags.IS_READONLY]
+    return !!value[ReactiveFlags.IS_READONLY];
 }
 
 export function isReactive(value) {
@@ -61,10 +74,8 @@ function createReactiveObject(target, proxyMap, baseHandlers) {
     return proxy;
 }
 
-
-
 // 1. 调用 reactive 并传入 {}
 // 2. 调用 createReactiveObject 并传入 target 和 proxyMap
 //      2.1 根据 target 在 proxyMap 中查找对应的 proxy
 //          - 查找到对应的 proxy 直接返回
-            // - 未查找，生成一个 proxy
+// - 未查找，生成一个 proxy

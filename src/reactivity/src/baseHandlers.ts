@@ -5,6 +5,7 @@ import {
     reactiveMap,
     readonly,
     readonlyMap,
+    shallowReadonlyMap,
 } from "./reactive";
 import { isObject } from "../../shared/index";
 const get = createGetter();
@@ -18,7 +19,8 @@ function createGetter(isReadonly = false, shallow = false) {
         //     "key: ",
         //     key
         // );
-        // 已存在的 proxy
+
+        // reactive 原始值
         const isExistInReactiveMap = () => {
             return (
                 key === ReactiveFlags.RAW &&
@@ -26,23 +28,44 @@ function createGetter(isReadonly = false, shallow = false) {
             );
         };
 
+        // readonly 原始值
         const isExistInReadonlyMap = () => {
             return (
                 key === ReactiveFlags.RAW &&
                 receiver === readonlyMap.get(target)
-            )
-        }
+            );
+        };
 
+        // shallowReadonly 原始值
+        const isExistInshallowReadonlyMap = () => {
+            return (
+                key === ReactiveFlags.RAW &&
+                receiver === shallowReadonlyMap.get(target)
+            );
+        };
+
+        // 是否是 reactive
         if (key === ReactiveFlags.IS_REACTIVE) {
             // 判断 reactive 类型
             return !isReadonly;
         } else if (key === ReactiveFlags.IS_READONLY) {
-            return isReadonly
-        } else if (isExistInReactiveMap() || isExistInReadonlyMap()) {
+            // 是否是 readonly
+            return isReadonly;
+        } else if (
+            isExistInReactiveMap() ||
+            isExistInReadonlyMap() ||
+            isExistInshallowReadonlyMap()
+        ) {
+            // 获取原始值
             return target;
         }
         // 反射
         const res = Reflect.get(target, key, receiver);
+
+        // shallowReadonly
+        if (shallow) {
+            return res;
+        }
         if (isObject(res)) {
             return isReadonly ? readonly(res) : reactive(res);
         }
@@ -82,7 +105,22 @@ export const mutableHandlers = {
 export const readonlyHandlers = {
     get: createGetter(true),
     set(target, key) {
-        console.warn(`Set operation on key "${String(key)}" failed target is readonly.`)
-        return true
+        console.warn(
+            `Set operation on key "${String(key)}" failed target is readonly.`
+        );
+        return true;
+    },
+};
+
+export const shallowReadonlyHandlers = {
+    get: createGetter(true, true),
+    set(target, key) {
+        console.warn(
+            `Set operation on key "${String(
+                key
+            )}" failed: target is shallowReadonly.`,
+            target
+        );
+        return true;
     },
 };
