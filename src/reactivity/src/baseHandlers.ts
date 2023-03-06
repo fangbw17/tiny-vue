@@ -8,8 +8,11 @@ import {
     shallowReadonlyMap,
 } from "./reactive";
 import { isObject } from "../../shared/index";
+
 const get = createGetter();
 const set = createSetter();
+const readonlyGet = createGetter(true)
+const shallowReadonlyGet = createGetter(true, true)
 
 function createGetter(isReadonly = false, shallow = false) {
     return function get(target, key, receiver) {
@@ -103,7 +106,7 @@ export const mutableHandlers = {
 };
 
 export const readonlyHandlers = {
-    get: createGetter(true),
+    get: readonlyGet,
     set(target, key) {
         console.warn(
             `Set operation on key "${String(key)}" failed target is readonly.`
@@ -113,7 +116,7 @@ export const readonlyHandlers = {
 };
 
 export const shallowReadonlyHandlers = {
-    get: createGetter(true, true),
+    get: shallowReadonlyGet,
     set(target, key) {
         console.warn(
             `Set operation on key "${String(

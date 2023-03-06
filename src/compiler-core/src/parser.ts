@@ -15,8 +15,14 @@ function createParserContext(content) {
 function parseChildren(context) {
     console.log("开始解析 children");
     const nodes: any[] = [];
-    const node = parseText(context);
 
+    let node = {};
+    // {{ 开头
+    if (context.source.startsWith("{{")) {
+        node = parseMustache(context);
+    } else {
+        node = parseText(context);
+    }
     nodes.push(node);
 
     return nodes;
@@ -41,6 +47,45 @@ function parseTextData(context: any, length: number): any {
     advanceBy(context, length);
 
     return rawText;
+}
+
+function parseMustache(context) {
+    console.log("解析 mustache", context);
+    let content = context.source;
+
+    // 查找结束标识
+    const startIndex = context.source.indexOf("{{");
+    const endIndex = context.source.indexOf("}}");
+
+
+    // 没有 {{ 或者 }}
+    if (startIndex == -1 || endIndex == -1) {
+        console.warn(`${context.source} is not a valid interpolation`);
+    } else {
+        // 移除 {{
+        advanceBy(context, 2)
+        content = parseSimpleExpress(startIndex, context.source.length - 2, context);
+        // 移除 }}
+        advanceBy(context, 2)
+    }
+    return {
+        type: NodeTypes.INTERPOLATION,
+        content,
+    };
+}
+
+function parseSimpleExpress(startIndex, endIndex, context) {
+    console.log("解析 simple express");
+
+    const rawText = context.source.slice(startIndex, endIndex);
+
+    // 移除 值
+    advanceBy(context, endIndex);
+
+    return {
+        type: NodeTypes.SIMPLE_EXPRESSION,
+        content: rawText.trim(),
+    };
 }
 
 function advanceBy(context, numberOfCharacters) {
