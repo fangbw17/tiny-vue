@@ -12,14 +12,27 @@
     <div id="app"></div>
 
     <script type="module">
-        import { baseParse, transform, generate, transformExpression } from '../../lib/tiny-vue.esm.js'
-        const ast = baseParse("{{hello}}")
-        transform(ast, {
-            nodeTransforms: [transformExpression]
-        })
-        console.log(ast);
-        const { code } = generate(ast)
-        console.log(code);
+        import { baseParse, transform, generate, transformExpression, transformElement } from '../../lib/tiny-vue.esm.js'
+        {
+
+            const ast = baseParse("{{hello}}")
+            transform(ast, {
+                nodeTransforms: [transformExpression]
+            })
+            console.log(ast);
+            const { code } = generate(ast)
+            console.log(code);
+        }
+
+        {
+            const ast = baseParse('<div>hi, {{msg}}</div>')
+            transform(ast, {
+                nodeTransforms: [transformExpression, transformElement]
+            })
+            const {code} = generate(ast)
+            console.log(code);
+            console.log(code.children[0]);
+        }
     </script>
 </body>
 

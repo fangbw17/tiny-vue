@@ -1,5 +1,9 @@
 import { NodeTypes } from "./ast";
-import { helperNameMap, TO_DISPLAY_STRING } from "./runtimeHelpers";
+import {
+    helperNameMap,
+    TO_DISPLAY_STRING,
+    CREATE_ELEMENT_VNODE,
+} from "./runtimeHelpers";
 
 export function generate(ast, options = {}) {
     // 生成 context
@@ -58,9 +62,31 @@ function genNode(node: any, context: any) {
         case NodeTypes.SIMPLE_EXPRESSION:
             genExpression(node, context);
             break;
+        case NodeTypes.ELEMENT:
+            genElement(node, context);
+            break;
+        case NodeTypes.TEXT:
+            genText(node, context);
+            break;
         default:
             break;
     }
+}
+
+function genText(node: any, context: any) {
+    const {push} = context
+
+    push(`'${node.content}'+`)
+}
+
+
+function genElement(node, context) {
+    const { push, helper} = context
+    push(`${helper(CREATE_ELEMENT_VNODE)}("${node.tag}", {},`)
+    node.children.forEach(n => {
+        genNode(n, context)
+    });
+    push(`)`)
 }
 
 function genExpression(node: any, context: any) {

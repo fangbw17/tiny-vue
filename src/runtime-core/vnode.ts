@@ -1,5 +1,7 @@
 import { ShapeFlags } from "../shared";
 
+export { createVNode as createElementVNode };
+
 /**
  * @description: 创建虚拟节点
  * @param {any} type 节点类型
@@ -56,7 +58,11 @@ export function normalizeChildren(vnode, children) {
 // 让 child 支持多种格式
 export function normalizeVNode(child) {
     // 暂时只支持处理 child 为 string 和 number 的情况
-    return createVNode(Text, null, String(child));
+    if (typeof child === "string" || typeof child === "number") {
+        return createVNode(Text, null, String(child));
+    } else {
+        return child;
+    }
 }
 
 // Text 使用 Symbol 唯一标识
