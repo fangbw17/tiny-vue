@@ -65,16 +65,17 @@ function createGetter(isReadonly = false, shallow = false) {
         // 反射
         const res = Reflect.get(target, key, receiver);
 
+        if (!isReadonly) {
+            // 注入追踪依赖
+            track(target, "get", key);
+        }
+
         // shallowReadonly
         if (shallow) {
             return res;
         }
         if (isObject(res)) {
             return isReadonly ? readonly(res) : reactive(res);
-        }
-        if (!isReadonly) {
-            // 注入追踪依赖
-            track(target, "get", key);
         }
         // 返回值
         return res;

@@ -31,7 +31,7 @@ export const PublicInstanceProxyHandlers = {
     set({ _: instance }, key, value) {
         const { setupState } = instance;
 
-        if (setupState !== {} && hasOwn(setupState, key)) {
+        if (Object.keys(setupState).length > 0 && hasOwn(setupState, key)) {
             setupState[key] = value;
         }
     },

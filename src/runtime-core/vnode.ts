@@ -9,16 +9,16 @@ import { ShapeFlags } from '../shared'
  */
 export const createVNode = function (
     type: any,
-    props: any = {},
-    children: string | Array<any>
+    props?: any,
+    children?: string | Array<any>
 ): any {
 
     const vnode = {
         el: null,
         component: null,
-        key: props.key || null,
+        key: props?.key,
         type,
-        props,
+        props: props || {},
         children,
         shapeFlag: getShapeFlag(type)
     }
@@ -26,9 +26,9 @@ export const createVNode = function (
     // 存在子节点
     if (Array.isArray(children)) {
         // 按位或运算，重设 shapeFlag 标识
-        vnode.shapeFlag = vnode.shapeFlag | ShapeFlags.ARRAY_CHILDREN
+        vnode.shapeFlag |= ShapeFlags.ARRAY_CHILDREN
     } else if (typeof children === 'string'){
-        vnode.shapeFlag = vnode.shapeFlag | ShapeFlags.TEXT_CHILDREN
+        vnode.shapeFlag |= ShapeFlags.TEXT_CHILDREN
     }
 
     normalizeChildren(vnode, children)
@@ -60,6 +60,7 @@ export function normalizeVNode(child) {
 
 // Text 使用 Symbol 唯一标识
 export const Text = Symbol('Text');
+export const Fragment = Symbol('Fragment')
 
 export function createTextVNode(text: string = "") {
     return createVNode(Text, {}, text)

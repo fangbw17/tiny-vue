@@ -56,7 +56,7 @@ function setupStatefulComponent(instance) {
     // proxy 对象代理了 instance.ctx 对象
     // 在使用的时候需要使用 instance.proxy 对象
     // 因为在 prod 和 dev 下 instance.ctx 是不同的
-    instance.proxy = new Proxy(instance.ctx, PublicInstanceProxyHandlers);
+    instance.proxy = new Proxy(instance.ctx, PublicInstanceProxyHandlers as any);
     const { setup } = instance.type;
     if (setup) {
         // 2. 调用 setup() 参数: props、context

@@ -1,13 +1,14 @@
-import { reactive, h, renderSlot } from "../../lib/tiny-vue.esm.js";
+import { reactive, h, renderSlot } from "../../../lib/tiny-vue.esm.js";
 
 const Child = {
     name: "Child",
     setup(props, context) {},
     render() {
         return h("div", {}, [
-            renderSlot(this.$slots, "default"),
+            renderSlot(this.$slots, "default", {
+                age: 16,
+              }),
             h("div", {}, "child"),
-            renderSlot(this.$slots, "footer"),
         ]);
     },
 };
@@ -24,10 +25,11 @@ export default {
                     msg: "this is child",
                 },
                 {
-                    // 默认插槽
-                    default: () => h("p", {}, "hey"),
-                    // 具名插槽
-                    footer: () => h('p', {}, 'slot footer')
+                    default: ({ age }) => [
+                        h("p", {}, "我是通过 slot 渲染出来的第一个元素 "),
+                        h("p", {}, "我是通过 slot 渲染出来的第二个元素"),
+                        h("p", {}, `我可以接收到 age: ${age}`),
+                      ],
                 }
             ),
         ]);

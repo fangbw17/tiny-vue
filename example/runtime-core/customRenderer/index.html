@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>slots</title>
+    <script src="../../../node_modules/pixi.js/dist/browser/pixi.js"></script>
+</head>
+
+<body>
+    <div id="app"></div>
+
+    <script type="module">
+        // import { createApp } from "../../../lib/tiny-vue.esm.js";
+
+        import App from "./App.js";
+        import { createApp } from "./renderer.js";
+        import { createRootContainer } from "./game.js";
+
+        createApp(App).mount(createRootContainer());
+
+    </script>
+</body>
+
+</html>

@@ -1,17 +1,26 @@
 import { isOn } from "../shared";
+import { createRenderer } from "../runtime-core";
 
-export function hostCreateElement(type: any) {
-    console.log("hostCreateElement", type);
+function createElement(type: any) {
+    console.log("CreateElement", type);
     const dom = document.createElement(type);
     return dom;
 }
 
-export function hostSetElementText(el: HTMLElement, text) {
-    console.log("hostSetElementText", el, text);
+function createText(text) {
+    return document.createTextNode(text)
+}
+
+function setText(node, text) {
+    node.nodeValue = text
+}
+
+ function setElementText(el: HTMLElement, text) {
+    console.log("SetElementText", el, text);
     el.textContent = text;
 }
 
-export function hostPatchProp(el, key, preValue, nextValue) {
+ function patchProp(el, key, preValue, nextValue) {
     console.log(`属性key: ${key} 的旧值是${preValue}，新值是:${nextValue}`);
 
     if (isOn(key)) {
@@ -44,8 +53,8 @@ export function hostPatchProp(el, key, preValue, nextValue) {
     }
 }
 
-export function hostInsert(child, parent, anchor = null) {
-    console.log(`hostInsert`);
+ function insert(child, parent, anchor = null) {
+    console.log(`Insert`);
     if (anchor) {
         parent.insertBefore(child, anchor);
     } else {
@@ -53,17 +62,26 @@ export function hostInsert(child, parent, anchor = null) {
     }
 }
 
-export function hostRemove(child) {
+ function remove(child) {
     const parent = child.parentNode;
     if (parent) parent.removeChild(child);
 }
 
-export function hostSetText(el, text) {
-    el.textContent = text;
+let renderer;
+
+function ensureRenderer() {
+    // 如果 renderer 有值的话，那么以后都不会初始化了
+    return renderer || (renderer = createRenderer({
+        createElement,
+        createText,
+        setText,
+        setElementText,
+        patchProp,
+        insert,
+        remove
+    }))
 }
 
-export function hostCreateText(type) {
-    console.log("hostCreateText");
-    const dom = document.createTextNode(type);
-    return dom;
+export const createApp = (...args) => {
+    return ensureRenderer().createApp(...args)
 }
