@@ -108,6 +108,8 @@ export function trigger(target, type, key) {
 
     const depsMap = targetMap.get(target);
 
+    if (!depsMap) return;
+
     const dep = depsMap.get(key);
 
     deps.push(dep);

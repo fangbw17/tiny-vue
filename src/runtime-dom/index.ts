@@ -55,11 +55,7 @@ function setText(node, text) {
 
  function insert(child, parent, anchor = null) {
     console.log(`Insert`);
-    if (anchor) {
-        parent.insertBefore(child, anchor);
-    } else {
-        parent.append(child);
-    }
+    parent.insertBefore(child, anchor)
 }
 
  function remove(child) {

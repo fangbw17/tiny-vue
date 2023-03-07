@@ -1,4 +1,4 @@
-import { h, ref } from "../../lib/tiny-vue.esm.js";
+import { h, ref } from "../../../lib/tiny-vue.esm.js";
 
 window.count = ref(1);
 

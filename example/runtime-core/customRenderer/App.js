@@ -19,7 +19,6 @@ export default {
             }
 
             x.value += speed * dir;
-
         });
 
         return {
@@ -29,6 +28,6 @@ export default {
     },
 
     render() {
-        return h("div", { id: "div" }, { x: this.x, y: this.y });
+        return h("rect", { x: this.x, y: this.y });
     },
 };

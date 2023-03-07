@@ -1,4 +1,4 @@
-import { h, ref } from "../../lib/tiny-vue.esm.js";
+import { h, ref } from "../../../lib/tiny-vue.esm.js";
 
 const isChange = ref(false);
 // 默认是顺序不变，新旧节点的数量不变，属性不变
@@ -98,13 +98,24 @@ const isChange = ref(false);
 // 第八种情况
 // 移动元素位置（ anchor 没有值的情况下 ）
 // 要移动的元素是属于最后一个位置
-const prevChildren = [
-  h("div", { key: "a", id: "old-a" }, "a"),
-  h("div", { key: "b", id: "old-b" }, "b"),
-];
+// const prevChildren = [
+//   h("div", { key: "a", id: "old-a" }, "a"),
+//   h("div", { key: "b", id: "old-b" }, "b"),
+// ];
+// const nextChildren = [
+//   h("div", { key: "b", id: "old-b" }, "b"),
+//   h("div", { key: "a", id: "old-a" }, "a"),
+// ];
+
+// 在左侧添加新元素
+// (a b)
+// c (a b)
+// i = 0, e1 = -1, e2 = 0
+const prevChildren = [h("p", { key: "A" }, "A"), h("p", { key: "B" }, "B")];
 const nextChildren = [
-  h("div", { key: "b", id: "old-b" }, "b"),
-  h("div", { key: "a", id: "old-a" }, "a"),
+    h("p", { key: "C" }, "C"),
+    h("p", { key: "A" }, "A"),
+    h("p", { key: "B" }, "B"),
 ];
 
 export default {

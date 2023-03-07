@@ -1,4 +1,4 @@
-import { h, ref } from "../../lib/tiny-vue.esm.js";
+import { h, ref } from "../../../lib/tiny-vue.esm.js";
 import PatchChildren from "./PatchChildren.js";
 import NextTicker from './NextTicker.js'
 
@@ -8,8 +8,8 @@ export default {
     render() {
         return h("div", { tId: 1 }, [
             h("p", {}, "主页"),
-            // h(PatchChildren),
-            h(NextTicker)
+            h(PatchChildren),
+            // h(NextTicker)
         ]);
     },
 };
