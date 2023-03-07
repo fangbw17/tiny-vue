@@ -18,8 +18,12 @@ function traverseNode(node, context) {
 
     // 节点转换 方法
     const nodeTransforms = context.nodeTransforms;
+    const exitFns: any = []
     nodeTransforms.forEach((fn) => {
-        fn(node, context);
+        const onExit = fn(node, context);
+        if (onExit) {
+            exitFns.push(onExit)
+        }
     });
 
     switch (node.type) {
@@ -35,6 +39,12 @@ function traverseNode(node, context) {
 
         default:
             break;
+    }
+
+    let i = exitFns.length
+    // 使用 while 比 for 快
+    while(i--) {
+        exitFns[i]()
     }
 }
 
