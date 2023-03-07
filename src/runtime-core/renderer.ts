@@ -183,19 +183,19 @@ export function createRenderer(options) {
         // c2.forEach(c => patch(null, c, container))
 
         // 快速算法
-        var j = 0;
+        let i = 0;
         const l2 = c2.length;
-        var oldEnd = c1.length - 1,
-            newEnd = l2 - 1;
+        var e1 = c1.length - 1,
+            e2 = l2 - 1;
         // 检查新旧节点的 type 和 key 是否相同
         var isSameVNodeType = function (n1, n2) {
             // if (n1 === undefined || n2 === undefined) return false
             return n1.type === n2.type && n1.key === n2.key;
         };
         // 新旧节点从头开始遍历
-        while (j <= oldEnd && j <= newEnd) {
-            const prevChild = c1[j];
-            const nextChild = c2[j];
+        while (i <= e1 && i <= e2) {
+            const prevChild = c1[i];
+            const nextChild = c2[i];
             if (!isSameVNodeType(prevChild, nextChild)) {
                 // 不同跳出 while 循环
                 console.log("头部遍历 - 新旧节点不同");
@@ -209,12 +209,12 @@ export function createRenderer(options) {
                 parentAnchor,
                 parentComponent
             );
-            j++;
+            i++;
         }
         // 新旧节点从尾部开始遍历
-        while (j <= oldEnd && j <= newEnd) {
-            const prevChild = c1[oldEnd];
-            const nextChild = c2[newEnd];
+        while (i <= e1 && i <= e2) {
+            const prevChild = c1[e1];
+            const nextChild = c2[e2];
             if (!isSameVNodeType(prevChild, nextChild)) {
                 // 不同跳出 while 循环
                 console.log("尾部遍历 - 新旧节点不同");
@@ -228,8 +228,8 @@ export function createRenderer(options) {
                 parentAnchor,
                 parentComponent
             );
-            oldEnd--;
-            newEnd--;
+            e1--;
+            e2--;
         }
 
         // 从头与从尾部遍历结束
@@ -241,18 +241,18 @@ export function createRenderer(options) {
         //               p-2
         //               p-3
         //
-        if (j > oldEnd && newEnd >= j) {
+        if (i > e1 && i <= e2) {
             // 锚点的计算：新的节点有可能需要添加到尾部，也可能添加到头部，所以需要指定添加的问题
             // 要添加的位置是当前的位置+1
             // 因为对于往左侧添加的话，应该获取到 c1 的第一个元素（因为它是被 mount 过的）
             // 而新的就添加到c1的第一个元素之前就可以
-            const nextPos = j + 1
-            const anchor = nextPos < l2 ? c2[nextPos].el : parentAnchor
-            while (newEnd >= j) {
-                console.log("新增一个节点：", c2[j].key);
-                patch(null, c2[j++], container, anchor, parentComponent);
+            const nextPos = i + 1;
+            const anchor = nextPos < l2 ? c2[nextPos].el : parentAnchor;
+            while (i >= e2) {
+                console.log("新增一个节点：", c2[i].key);
+                patch(null, c2[i++], container, anchor, parentComponent);
             }
-        } else if (j > newEnd && j <= oldEnd) {
+        } else if (i > e2 && i <= e1) {
             //               新      旧
             // newEnd = 0 -> p-1     p-1
             //      j = 1 -> p-2     p-4 <- j = 1
@@ -260,64 +260,138 @@ export function createRenderer(options) {
             //                       p-2
             //                       p-3
             //
-            while (oldEnd >= j) {
-                console.log("移除一个节点: ", c1[j].key);
-                hostRemove(c1[j++].el);
+            while (i <= e1) {
+                console.log("移除一个节点: ", c1[i].key);
+                hostRemove(c1[i++].el);
             }
         } else {
             // 前后都对比完了、中间节点是乱序的对比情况
             // 新 p1 p3 p2 p4 p6 p7
             // 旧 p1 p2 p3 p4 p5 p7
-            let oldIndex = j,
-                newIndex = j;
+            let s1 = i,
+                s2 = i;
             // 节点 map : {VNode1.key: 1, VNode2.key: 2}
-            const keyMap = new Map();
+            const keyToNewIndexMap = new Map();
+            let moved = false;
+            let maxNewIndexSoFar = 0;
+            // 先把 key 和 newIndex 绑定，方便后续基于 key 找到 newIndex
             // 遍历新节点
-            for (let i = newIndex; i <= newEnd; i++) {
+            for (let i = s2; i <= e2; i++) {
                 const nextChild = c2[i];
-                keyMap.set(nextChild.key, i);
+                keyToNewIndexMap.set(nextChild.key, i);
             }
             // 需要处理新节点的数量
-            const toBePatched = newEnd - newIndex + 1;
+            const toBePatched = e2 - s2 + 1;
+            let patched = 0;
             // 用来记录新节点对应旧节点的下标值
             const newIndexArray = new Array(toBePatched);
-            for (let index = 0; index < newIndexArray.length; index++) {
+            // 初始化为0，后面处理的时候 如果发现是0，那么久说明信值再老的里面不存在
+            for (let index = 0; index < toBePatched; index++) {
                 // 每个新节点初始 -1
-                newIndexArray[index] = -1;
+                newIndexArray[index] = 0;
             }
 
             // 遍历老节点
             // 1. 老节点有，新节点没有则删除
             // 2. 新节点有，老节点没有则新增
-            for (let k = oldIndex; k <= oldEnd; k++) {
-                const prevChild = c1[k];
-                const newIndex = keyMap.get(prevChild.key);
-                newIndexArray[newIndex] = k;
+            for (i = s1; i <= e1; i++) {
+                const prevChild = c1[i];
 
-                // 因为有可能 newIndex 的值为0 （0也是正常值）
-                // 所以需要用 undefined 判断
-                if (newIndex === undefined) {
-                    // 旧数据中的当前节点的 key，未在新数据中找到，则移除当前旧节点
+                // 如果老的节点大于新节点的数量，那么这里在处理老节点的时候就直接删除即可
+                if (patched >= toBePatched) {
+                    hostRemove(prevChild.el);
+                    continue;
+                }
+
+                let newIdx;
+                if (prevChild.key !== null) {
+                    // 通过 key 快速查找，时间复杂度O(1)
+                    newIdx = keyToNewIndexMap.get(prevChild.key);
+                } else {
+                    // 如果没有 key 的话，那么只能遍历所有新节点来确定当前节点是否存在
+                    // 时间复杂度O(n)
+                    for (let j = s2; j < e2; j++) {
+                        if (isSameVNodeType(prevChild, c2[j])) {
+                            newIdx = j;
+                            break;
+                        }
+                    }
+                }
+
+                // newIdx 的值可能为0 （0 也是正常值）
+                // 需要判断是否是 undefined 或者 null
+                if (newIdx === undefined) {
+                    // 节点不存在
                     hostRemove(prevChild.el);
                 } else {
-                    // 新老节点都有
-                    patch(prevChild, c2[newIndex], container, null, parentComponent);
+                    // 新老节点都存在
+                    console.log("新老节点都存在");
+                    // 新老节点的索引建立映射关系
+                    // i + 1 是因为 i 可能是 0. (0的话会被认为新节点在老的节点中不存在)
+                    newIndexArray[newIdx - s2] = i + 1;
+                    // 确定中间的节点是否需要移动
+                    // 新的 newIdx 如果一直是升序的话，那么说明没有移动
+                    // 所以可以记录最后一个节点在新的里面的索引，然后看看是不是升序
+                    // 不是升序的话，就可以确定节点移动过了
+                    if (newIdx >= maxNewIndexSoFar) {
+                        maxNewIndexSoFar = newIdx;
+                    } else {
+                        moved = true;
+                    }
+                    patch(
+                        prevChild,
+                        c2[newIdx],
+                        container,
+                        null,
+                        parentComponent
+                    );
+                    patched++;
                 }
             }
 
+            // 利用最长递增子序列来优化移动逻辑
+            // 因为元素是升序的话，那么这些元素就是不需要移动的
+            // 而我们就可以通过最长递增子序列来获取到升序的列表
+            // 在移动的时候我们去对比这个列表，如果对比上的话，就说明当前元素不需要移动
+            // 通过 moved 来进行优化，如果没有移动过的话 那么就不需要执行算法
+            // getSequence 返回的是 newIndexArray 的索引值
+            // 所以后面我们可以直接遍历索引值来处理，也就是直接使用 toBePatched 即可
+            const increasingNewIndexSequence = moved
+                ? getSequence(newIndexArray)
+                : [];
+            let j = increasingNewIndexSequence.length - 1;
+
             // 遍历新节点
-            // 老节点没有，新节点有则创建
-            for (let n = newEnd; n >= newIndex; n--) {
-                const nextChild = c2[n];
-                if (newIndexArray[n] === -1) {
-                    // 初始为 -1，未在老节点中查找到
-                    patch(null, nextChild, container);
-                } else {
-                    // n: 当前元素
-                    // n + 1: 下一个元素 （锚点元素）
-                    // 当 n 为新数据中最后一个节点时， n + 1 可能没有元素，没有则设置为 null
-                    const anchor = n + 1 >= newEnd + 1 ? null : c2[n + 1];
-                    hostInsert(nextChild.el, container, anchor && anchor.el);
+            // 1. 需要找出老节点没有，而新节点有的 -> 需要把这个节点创建
+            // 2. 最后需要移动一下位置，比如 [c,d,e] -> [e,c,d]
+
+            // 这里倒循环是因为在 insert 的时候，需要保证锚点是处理完的节点（也就是已经确定位置了）
+            // 因为 insert 逻辑是使用的 insertBefore()
+            for (let i = toBePatched - 1; i >= 0; i--) {
+                // 确定当前要处理的节点索引
+                const nextIndex = s2 + i;
+                const nextChild = c2[nextIndex];
+                // 锚点等于当前节点索引+1
+                // 也就是当前节点的后面一个节点(又因为是倒遍历，所以锚点是位置确定的节点)
+                const anchor =
+                    nextIndex + 1 < l2 ? c2[nextIndex + 1].el : parentAnchor;
+
+                if (newIndexArray[i] === 0) {
+                    // 说明新节点在老的里面不存在
+                    // 需要创建
+                    patch(null, nextChild, container, anchor, parentComponent);
+                } else if (moved) {
+                    // 需要移动
+                    // 1. j 已经没有了 说明剩下的都需要移动了
+                    // 2. 最长子序列里面的值和当前的值匹配不上， 说明当前元素需要移动
+                    if (j < 0 || increasingNewIndexSequence[j] !== i) {
+                        // 移动的话使用 insert 即可
+                        hostInsert(nextChild.el, container, anchor);
+                    } else {
+                        // 这里就是命中了  index 和 最长递增子序列的值
+                        // 所以可以移动指针了
+                        j--;
+                    }
                 }
             }
         }
@@ -502,4 +576,45 @@ export function createRenderer(options) {
     return {
         createApp: createAppAPI(render),
     };
+}
+
+function getSequence(arr: number[]): number[] {
+    const p = arr.slice();
+    const result = [0];
+    let i, j, u, v, c;
+    const len = arr.length;
+    for (i = 0; i < len; i++) {
+        const arrI = arr[i];
+        if (arrI !== 0) {
+            j = result[result.length - 1];
+            if (arr[j] < arrI) {
+                p[i] = j;
+                result.push(i);
+                continue;
+            }
+            u = 0;
+            v = result.length - 1;
+            while (u < v) {
+                c = (u + v) >> 1;
+                if (arr[result[c]] < arrI) {
+                    u = c + 1;
+                } else {
+                    v = c;
+                }
+            }
+            if (arrI < arr[result[u]]) {
+                if (u > 0) {
+                    p[i] = result[u - 1];
+                }
+                result[u] = i;
+            }
+        }
+    }
+    u = result.length;
+    v = result[u - 1];
+    while (u-- > 0) {
+        result[u] = v;
+        v = p[v];
+    }
+    return result;
 }
