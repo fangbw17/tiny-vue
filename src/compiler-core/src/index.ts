@@ -1,5 +1,1 @@
-export * from './ast'
-export * from './parser'
-export * from './transform'
-export * from './codegen'
-export * from './transforms/transformExpression'
+export {baseCompile} from './compile'

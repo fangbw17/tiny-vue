@@ -1,4 +1,5 @@
 export * from "./shapeFlags";
+export * from './toDisplayString'
 
 // 是否为对象
 export const isObject = (val) => {

@@ -3,7 +3,7 @@ import { createComponentInstance } from "./component";
 import { queueJob } from "./scheduler";
 import { effect } from "../reactivity/src";
 import { setupComponent } from "./component";
-import { Text, Fragment } from "./vnode";
+import { Text, Fragment, normalizeVNode } from "./vnode";
 import { shouldUpdateComponent } from "./componentRenderUtils";
 import { createAppAPI } from "./createApp";
 
@@ -500,9 +500,8 @@ export function createRenderer(options) {
             if (!instance.isMounted) {
                 console.log("调用 render,获取 subTree");
                 const proxyToUse = instance.proxy;
-                const subTree = (instance.subTree = instance.render.call(
-                    proxyToUse,
-                    proxyToUse
+                const subTree = (instance.subTree = normalizeVNode(
+                    instance.render.call(proxyToUse, proxyToUse)
                 ));
                 console.log("subTree", subTree);
 
@@ -538,7 +537,9 @@ export function createRenderer(options) {
                 }
                 // 获取新的 subTree
                 const proxyToUse = instance.proxy;
-                const nextTree = instance.render.call(proxyToUse, proxyToUse);
+                const nextTree = normalizeVNode(
+                    instance.render.call(proxyToUse, proxyToUse)
+                );
                 // 替换之前的 subTree
                 const prevTree = instance.subTree;
                 instance.subTree = nextTree;

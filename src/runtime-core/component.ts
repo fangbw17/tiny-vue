@@ -44,11 +44,10 @@ export function setupComponent(instance) {
     // 处理 props
     initProps(instance, props);
     // 处理 slots
-    initSlots(instance, children)
+    initSlots(instance, children);
 
     setupStatefulComponent(instance);
 }
-
 
 function setupStatefulComponent(instance) {
     // 1. 创建 proxy
@@ -56,7 +55,10 @@ function setupStatefulComponent(instance) {
     // proxy 对象代理了 instance.ctx 对象
     // 在使用的时候需要使用 instance.proxy 对象
     // 因为在 prod 和 dev 下 instance.ctx 是不同的
-    instance.proxy = new Proxy(instance.ctx, PublicInstanceProxyHandlers as any);
+    instance.proxy = new Proxy(
+        instance.ctx,
+        PublicInstanceProxyHandlers as any
+    );
     const { setup } = instance.type;
     if (setup) {
         // 2. 调用 setup() 参数: props、context
@@ -64,12 +66,13 @@ function setupStatefulComponent(instance) {
         // 设置 currentInstance 的值
         setCurrentInstance(instance);
         // 真实场景里应该只有 dev 环境会把 props 设置为只读
-        const setupResult = setup && setup(shallowReadonly(instance.props), context);
+        const setupResult =
+            setup && setup(shallowReadonly(instance.props), context);
         setCurrentInstance(null);
         // 3. 处理 setupResult
         handleSetupResult(instance, setupResult);
     } else {
-        finishComponentSetup(instance)
+        finishComponentSetup(instance);
     }
 }
 
@@ -95,16 +98,23 @@ function handleSetupResult(instance, setupResult) {
         instance.setupState = proxyRefs(setupResult);
     }
 
-    finishComponentSetup(instance)
-
+    finishComponentSetup(instance);
 }
 
 function finishComponentSetup(instance) {
-    
+    // 给 instance 设置 render
+
+    // 先取到用户设置的 component options
     const component = instance.type;
 
     if (!instance.render) {
         // 调用 compile 模板编译 template
+        if (compile && !component.render) {
+            if (component.template) {
+                const template = component.template;
+                component.render = compile(template);
+            }
+        }
         instance.render = component.render;
     }
 
@@ -122,4 +132,9 @@ export function getCurrentInstance() {
 
 export function setCurrentInstance(instance) {
     currentInstance = instance;
+}
+
+let compile;
+export function registerRuntimeCompiler(_compile) {
+    compile = _compile;
 }

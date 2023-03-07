@@ -66,7 +66,7 @@ export function triggerRefValue(ref) {
 const shallowUnwrapHandlers = {
     get(target, key, receiver) {
         const res = Reflect.get(target, key, receiver)
-        return unRef(ref)
+        return unRef(res)
     },
     set(target, key, value, receiver) {
         const oldValue = target[key]
