@@ -8,10 +8,14 @@ export function transform(root, options = {}) {
     // 遍历 node
     traverseNode(root, context);
 
-    root.helpers.push(...context.helpers.keys())
+    craeteRootCodegen(root, context)
+
+    root.helpers.push(...context.helpers.keys());
 }
 
 function traverseNode(node, context) {
+    const type: NodeTypes = node.type;
+
     // 节点转换 方法
     const nodeTransforms = context.nodeTransforms;
     nodeTransforms.forEach((fn) => {
@@ -21,7 +25,7 @@ function traverseNode(node, context) {
     switch (node.type) {
         case NodeTypes.INTERPOLATION:
             // 插值的点，在于后续生成 render 代码的时候获取变量的值
-            context.helper(TO_DISPLAY_STRING)
+            context.helper(TO_DISPLAY_STRING);
             break;
         case NodeTypes.ROOT:
         case NodeTypes.ELEMENT:
@@ -51,8 +55,15 @@ function createTransformContext(root, options) {
             // TODO 但是为什么收集次数呢
             // helpers 数据会在后续生成代码的时候用到
             const count = context.helpers.get(name) || 0;
-            context.helpers.set(name, count + 1)
-        }
+            context.helpers.set(name, count + 1);
+        },
     };
     return context;
+}
+
+function craeteRootCodegen(root, context) {
+    const { children } = root;
+    const child = children[0];
+
+    root.codegenNode = child;
 }

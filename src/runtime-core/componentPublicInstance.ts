@@ -14,7 +14,7 @@ export const PublicInstanceProxyHandlers = {
         console.log("触发 proxy 的 hook. key: ", key);
 
         // 不是 $, 检测 是否在setupState 中
-        if (key !== "$") {
+        if (key[0] !== "$") {
             // 先检测访问的 key 是否存在于 setupState 中, 是的话直接返回
             if (hasOwn(setupState, key)) {
                 return setupState[key];
@@ -34,5 +34,6 @@ export const PublicInstanceProxyHandlers = {
         if (Object.keys(setupState).length > 0 && hasOwn(setupState, key)) {
             setupState[key] = value;
         }
+        return true
     },
 };

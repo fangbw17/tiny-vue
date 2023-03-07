@@ -310,7 +310,7 @@ export function createRenderer(options) {
                 } else {
                     // 如果没有 key 的话，那么只能遍历所有新节点来确定当前节点是否存在
                     // 时间复杂度O(n)
-                    for (let j = s2; j < e2; j++) {
+                    for (let j = s2; j <= e2; j++) {
                         if (isSameVNodeType(prevChild, c2[j])) {
                             newIdx = j;
                             break;
@@ -566,6 +566,15 @@ export function createRenderer(options) {
     }
 
     function updateComponentPreRender(instance, nextVNode) {
+        // 更新 nextVNode 的组件实例
+        // instance.vnode 是组件实例更新前的
+        // props 就是基于 instance.vnode.props 获取
+        // 更新 vnode
+        nextVNode.component = instance;
+        // const prevProps = instance.vnode.props
+        instance.vnode = nextVNode;
+        instance.next = null;
+
         const { props } = nextVNode;
         console.log("更新组件的 props", props);
         instance.props = props;
