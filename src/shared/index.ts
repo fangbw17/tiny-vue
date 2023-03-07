@@ -6,6 +6,8 @@ export const isObject = (val) => {
     return val !== null && typeof val === 'object'
 }
 
+export const isString = val => typeof val === 'string'
+
 // 对象复制
 export const extend = Object.assign
 export function hasChanged(value, oldValue) {
