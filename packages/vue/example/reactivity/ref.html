@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ref</title>
+</head>
+
+<body>
+    <div id="app"></div>
+
+    <script type="module">
+        import { ref, effect } from '../../dist/tiny-vue.esm-bundler.js'
+        {
+            const a = ref(1)
+            let dummy
+            let calls = 0
+            effect(() => {
+                calls++
+                dummy = a.value
+            })
+            console.log(calls === 1);
+            console.log(dummy === 1);
+            a.value = 2
+            console.log(calls === 2);
+            console.log(dummy === 2);
+            a.value = 2
+            console.log(calls === 2);
+            console.log(dummy === 2)
+        }
+
+        {
+            const a = ref({
+                count: 1
+            })
+            let dummy
+            effect(() => {
+                dummy = a.value.count
+            })
+            console.log(dummy === 1);
+            a.value.count = 323
+            console.log(dummy === 2);
+            console.log(a);
+        }
+
+    </script>
+</body>
+
+</html>

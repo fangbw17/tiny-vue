@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app"></div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <div id="app">{{ message }}</div>
+
+    <script>
+        const { createApp,
+            h,
+            getCurrentInstance,
+            provide,
+            inject } = Vue
+
+        const son = {
+            name: 'son',
+            setup() {
+                const grandName = inject('grand-name')
+                const fatherMsg = inject('father')
+                console.log(`grandName --- ${grandName}...... father: ${fatherMsg}`);
+                return {
+                    grandName,
+                    fatherMsg
+                }
+            },
+            render() {
+                return h('div', {}, `${this.grandName}-${this.fatherMsg}-son`)
+            }
+        }
+
+        const father = {
+            name: 'father',
+            setup() {
+                provide('grand-name', 'grandFather')
+                provide('father', 'father')
+                const name = inject('grand-name') // foo
+                if (name === 'father-custom') {
+                    throw new Error('inject("grand-name") value must equal to "foo"')
+                } else {
+                    console.log("inject('grand-name') value is", name);
+                }
+            },
+            render() {
+                // return h(son)
+                return  h('div', {}, [
+                    h('div', {}, 'father'),
+                    h(son)
+                ])
+            }
+        }
+
+        const grandFather = {
+            name: "grandFather",
+            setup() {
+                provide("grand-name", "foo");
+
+                return () => h("div", {}, [
+                    h('div', {}, 'grandFather'),
+                    h(father)
+                ])
+            },
+        };
+
+        const App = {
+            name: "App",
+            setup() {
+                const instance = getCurrentInstance();
+
+                console.log("currentInstance ----", instance);
+            },
+
+            render() {
+                return h("div", {}, [h("div", {}, "App"), h(grandFather)]);
+            },
+        };
+
+
+        createApp(App).mount('#app')
+
+    </script>
+
+</body>
+
+</html>

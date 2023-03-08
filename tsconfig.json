@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    // "baseUrl": "",
+    "baseUrl": "",
     "strict": true, /* 严格模式检查 */
-    // "rootDir": "", /* 指定根目录 */
+    "rootDir": "", /* 指定根目录 */
     "moduleResolution": "node", /* 指定模块解析模式 node: commonjs的方式；(node16 or nodeeext): esm;*/
     "esModuleInterop": true, /* commonjs/amd/umd/es6语法兼容*/
     "target": "ES2016", /* 设置 JS 语言版本*/
@@ -14,10 +14,9 @@
     "downlevelIteration": true,
     "lib": ["ES6", "DOM"],
     // "types": ["vitest/globals"],
-    // "paths": {
-      // "@tiny-vue/*": ["packages/*/src"]
-    // },
+    "paths": {
+      "@tiny-vue/*": ["packages/*/src"]
+    },
   },
-  // "include": ["packages/*/src", "packages/*/__tests__"]
-  "include": ["src/index.ts", "src/global.d.ts"]
+  "include": ["packages/*/src"]
 }
