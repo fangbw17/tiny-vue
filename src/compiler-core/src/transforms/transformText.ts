@@ -5,6 +5,7 @@ export function transformText(node, context) {
     if (node.type === NodeTypes.ELEMENT) {
         return () => {
             // 标签元素
+
             const children = node.children;
             let currentContainer;
 
@@ -16,23 +17,25 @@ export function transformText(node, context) {
                 if (isText(child)) {
                     for (let j = i + 1; j < children.length; j++) {
                         const next = children[j];
+                        if (isText(next)) {
+                            if (!currentContainer) {
+                                currentContainer = children[i] = {
+                                    type: NodeTypes.COMPOUND_EXPRESSION,
+                                    loc: child.loc,
+                                    children: [child],
+                                };
+                            }
 
-                        if (!currentContainer) {
-                            currentContainer = children[i] = {
-                                type: NodeTypes.COMPOUND_EXPRESSION,
-                                loc: child.loc,
-                                children: [child],
-                            };
+                            currentContainer.children.push(" + ", next);
+                            // 把当前的节点放到容器内，然后删除j
+                            children.splice(j, 1);
+                            // 删除了一个元素，需要--
+                            j--;
+                        } else {
+                            currentContainer = undefined;
+                            break;
                         }
-
-                        currentContainer.children.push(" + ", next);
-                        // 把当前的节点放到容器内，然后删除j
-                        children.splice(j, 1);
-                        // 删除了一个元素，需要--
-                        j--;
                     }
-                } else {
-                    currentContainer = undefined;
                 }
             }
         };

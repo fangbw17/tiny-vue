@@ -1,5 +1,4 @@
 import { Fragment, createVNode } from "../vnode";
-import { getCurrentInstance } from "../component";
 
 export function renderSlot(slots, name: string, props = {}) {
     const slot = slots[name];
