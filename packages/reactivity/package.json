@@ -9,6 +9,6 @@
   "author": "bowen.fang <bowen.fang17@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "@mini-vue/shared": "workspace:^1.0.0"
+    "@tiny-vue/shared": "workspace:^1.0.0"
   }
 }

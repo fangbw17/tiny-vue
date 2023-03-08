@@ -12,8 +12,8 @@
     "preserveConstEnums": true, /* 生成的代码中保留 const enum */
     "sourceMap": true, /* 创建对应的 source-map 文件 */
     "downlevelIteration": true,
-    "lib": ["ES6", "DOM"],
-    // "types": ["vitest/globals"],
+    "lib": ["ESNext", "DOM"],
+    "types": ["jest"],
     "paths": {
       "@tiny-vue/*": ["packages/*/src"]
     },

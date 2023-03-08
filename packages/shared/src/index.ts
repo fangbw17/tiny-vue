@@ -48,3 +48,14 @@ export const capitalize = (str: string) =>
  */
 export const toHandlerKey = (str: string) =>
     str ? `on${capitalize(str)}` : ``;
+
+// 用来匹配 kebab-case 的情况
+// 比如 onTest-event 可以匹配到 T
+// 然后取到 T 在前面加一个 - 就可以
+// \BT 就可以匹配到 T 前面是字母的位置
+const hyphenateRE = /\B([A-Z])/g;
+/**
+ * @private
+ */
+export const hyphenate = (str: string) =>
+  str.replace(hyphenateRE, "-$1").toLowerCase();
