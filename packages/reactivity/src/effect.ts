@@ -1,5 +1,5 @@
 import { createDep } from "./dep";
-import { extend } from "../../shared/src/index";
+import { extend } from "@tiny-vue/shared";
 
 // 当前的 effect
 let activeEffect = void 0;

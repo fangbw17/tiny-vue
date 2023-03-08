@@ -1,7 +1,7 @@
 {
-    "name": "@tiny-vue/runtime-core",
+    "name": "@tiny-vue/compiler-core",
     "version": "1.0.0",
-    "description": "@tiny-vue/runtime-core",
+    "description": "@tiny-vue/compiler-core",
     "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -9,7 +9,6 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-      "@tiny-vue/reactivity": "workspace:^1.0.0",
       "@tiny-vue/shared": "workspace:^1.0.0"
     }
   }

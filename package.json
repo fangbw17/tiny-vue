@@ -2,8 +2,8 @@
   "name": "learn-rollup",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "type": "module",
+  "main": "lib/tiny-vue.cjs.js",
+  "module": "lib/tiny-vue.esm.js",
   "scripts": {
     "dev": "rollup -c -w",
     "build": "rollup -c",

@@ -1,4 +1,4 @@
-import { isString } from "../../shared/src";
+import { isString } from "@tiny-vue/shared";
 import { NodeTypes } from "./ast";
 import {
     helperNameMap,

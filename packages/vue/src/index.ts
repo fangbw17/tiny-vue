@@ -1,17 +1,8 @@
-// import * as runtimeDom from "@tiny-vue/runtime-dom";
-// import { registerRuntimeCompiler } from "@tiny-vue/runtime-dom";
-
-// import { baseCompile } from "@tiny-vue/compiler-core";
-// export * from "@tiny-vue/reactivity";
-// export * from "@tiny-vue/runtime-dom";
-
-// 这个文件充当 vue 模块
 import * as runtimeDom from "@tiny-vue/runtime-dom";
 import { registerRuntimeCompiler } from "@tiny-vue/runtime-dom";
 
 import { baseCompile } from "@tiny-vue/compiler-core";
 
-export * from "@tiny-vue/reactivity"
 export * from "@tiny-vue/runtime-dom";
 
 function compileToFunction(template, options = {}) {

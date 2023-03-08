@@ -7,7 +7,7 @@ import {
     readonlyMap,
     shallowReadonlyMap,
 } from "./reactive";
-import { isObject } from "../../shared/src/index";
+import { isObject } from "@tiny-vue/shared";
 
 const get = createGetter();
 const set = createSetter();

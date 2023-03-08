@@ -8,5 +8,10 @@
   },
   "keywords": [],
   "author": "cuixiaorui",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@tiny-vue/compiler-core": "workspace:^1.0.0",
+    "@tiny-vue/runtime-dom": "workspace:^1.0.0",
+    "@tiny-vue/shared": "workspace:^1.0.0"
+  }
 }

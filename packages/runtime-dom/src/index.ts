@@ -1,4 +1,4 @@
-import { isOn } from "../../shared/src";
+import { isOn } from "@tiny-vue/shared";
 import { createRenderer } from "@tiny-vue/runtime-core";
 
 function createElement(type: any) {
